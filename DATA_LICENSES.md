@@ -1,0 +1,51 @@
+# Data sources and licences
+
+Code in this repository is MIT-licensed (`LICENSE`). Data and models come from the sources below.
+
+## Corpus K1: German federal energy laws
+
+Source: gesetze-im-internet.de, Bundesministerium der Justiz; nichtamtliche konsolidierte Fassung, Stand 2026-10-25.
+Laws are official works without copyright protection in Germany (§ 5 Abs. 1 UrhG). The site's texts are a non-official
+consolidation; five laws are an insubstantial extract of the database. Every unit links back to its source norm.
+
+| Law | Slug | Download URL | Bytes | SHA-256 |
+|---|---|---|---|---|
+| EnWG | enwg_2005 | https://www.gesetze-im-internet.de/enwg_2005/xml.zip | 283,955 | 4fa63c65ec0a89816bc1e0dd74a6a0eaa892e5b422dfe39b6ae96fc1f8809718 |
+| EEG 2023 | eeg_2014 | https://www.gesetze-im-internet.de/eeg_2014/xml.zip | 128,660 | e26f04179fa8fef3b7e8a37963ee38ed853a5db4dd9b06047601662a1fad88c7 |
+| MsbG | messbg | https://www.gesetze-im-internet.de/messbg/xml.zip | 45,007 | 30875c53396267ef47772bd5f53877295cfdc8a0c9bee4a6786b1abf0255249b |
+| EnFG | enfg | https://www.gesetze-im-internet.de/enfg/xml.zip | 41,927 | 6d7bb5884850255fc0be71d5e774b7818f2d498be0b1a35b402c0c0119785a5f |
+| KWKG 2025 | kwkg_2016 | https://www.gesetze-im-internet.de/kwkg_2016/xml.zip | 42,631 | e0dfd9dfac547459720e38914e16fb3c055f5d046d1131963c5efbb5d1536074 |
+
+Committed derivatives: `data/corpus/k1_units.jsonl.gz` (parsed units), `data/corpus/snapshot.json` (fetch record) and
+`fixtures/ci/gii/messbg.xml.zip` (the unmodified MsbG download, for offline CI).
+
+## Corpus K2: Munich citizen services (planned, not included)
+
+The spec's second corpus (`it-at-m/LHM-Dienstleistungen-QA`) is a planned extension. Its licence has not been confirmed,
+so this release contains no loader, no texts and no results for it.
+
+## Tokenizer
+
+`data/tokenizer/multilingual-e5-base.tokenizer.json.xz` is the unmodified `tokenizer.json` of
+`intfloat/multilingual-e5-base` (revision d128750597153bb5987e10b1c3493a34e5a4502a, MIT licence), compressed with xz.
+SHA-256 of the uncompressed file: 62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626. It is used only to
+count tokens for chunking.
+
+## Models (downloaded at run time, not redistributed)
+
+| Role | Model | Revision | Licence |
+|---|---|---|---|
+| Dense retriever | intfloat/multilingual-e5-base | d128750597153bb5987e10b1c3493a34e5a4502a | MIT |
+| English-only control | sentence-transformers/all-MiniLM-L6-v2 | 1110a243fdf4706b3f48f1d95db1a4f5529b4d41 | Apache-2.0 |
+| Reranker | BAAI/bge-reranker-base | 2cfc18c9415c912f9d8155881c133215df768a70 | MIT |
+
+`fixtures/ci/cache/` holds embeddings and reranker scores these models computed for the MsbG CI slice.
+
+## Question set
+
+`data/questions/` is CC BY 4.0; see `data/questions/LICENSE.md` and `data/questions/DATASHEET.md`.
+
+## LLM fixtures
+
+`fixtures/llm/synthetic_responses.json` and `fixtures/llm/cassette.jsonl` are hand-written synthetic fixtures (MIT, like
+the code). They are not model output and no reported number comes from them.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import typer
 
 from pruefstand import __version__
+from pruefstand.commands import corpus
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, load
 
 app = typer.Typer(
@@ -24,3 +25,7 @@ def info(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_
     typer.echo(
         f"pruefstand {__version__} | profile {cfg.profile} | run {cfg.run_id} | config {cfg.config_hash()[:12]}"
     )
+
+
+for module in (corpus,):
+    module.register(app)

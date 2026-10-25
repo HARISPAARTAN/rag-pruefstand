@@ -1,0 +1,42 @@
+{
+  "fetched_at": "2026-10-25",
+  "laws": {
+    "eeg_2014": {
+      "builddate": "20260506174601",
+      "bytes": 128660,
+      "law_abbr": "EEG 2023",
+      "sha256": "e26f04179fa8fef3b7e8a37963ee38ed853a5db4dd9b06047601662a1fad88c7",
+      "url": "https://www.gesetze-im-internet.de/eeg_2014/xml.zip"
+    },
+    "enfg": {
+      "builddate": "20261020215514",
+      "bytes": 41927,
+      "law_abbr": "EnFG",
+      "sha256": "6d7bb5884850255fc0be71d5e774b7818f2d498be0b1a35b402c0c0119785a5f",
+      "url": "https://www.gesetze-im-internet.de/enfg/xml.zip"
+    },
+    "enwg_2005": {
+      "builddate": "20261022215507",
+      "bytes": 283955,
+      "law_abbr": "EnWG",
+      "sha256": "4fa63c65ec0a89816bc1e0dd74a6a0eaa892e5b422dfe39b6ae96fc1f8809718",
+      "url": "https://www.gesetze-im-internet.de/enwg_2005/xml.zip"
+    },
+    "kwkg_2016": {
+      "builddate": "20260506175821",
+      "bytes": 42631,
+      "law_abbr": "KWKG 2025",
+      "sha256": "e0dfd9dfac547459720e38914e16fb3c055f5d046d1131963c5efbb5d1536074",
+      "url": "https://www.gesetze-im-internet.de/kwkg_2016/xml.zip"
+    },
+    "messbg": {
+      "builddate": "20260506175642",
+      "bytes": 45007,
+      "law_abbr": "MsbG",
+      "sha256": "30875c53396267ef47772bd5f53877295cfdc8a0c9bee4a6786b1abf0255249b",
+      "url": "https://www.gesetze-im-internet.de/messbg/xml.zip"
+    }
+  },
+  "licence_note": "Gesetze und Verordnungen sind nach § 5 Abs. 1 UrhG gemeinfrei",
+  "source": "gesetze-im-internet.de, Bundesministerium der Justiz; nichtamtliche konsolidierte Fassung"
+}
