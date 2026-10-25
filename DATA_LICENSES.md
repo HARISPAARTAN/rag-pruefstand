@@ -34,6 +34,9 @@ CC BY 4.0, see `data/questions/LICENSE.md`. Provenance and limits, in short (det
 - The crossref type (36) consists of two-passage questions across norms, six of them across laws; it is not a strict test
   of cross-reference following. The unanswerable type (24) is model-written, 15 of the 24 are hard negatives.
 - 57 of the 240 questions name a law in the question text; the others rely on topic words.
+- All records carry `provenance.created_at = 2026-10-26`; this is a dating error of the authoring agent, the questions
+  were written and revised on 2026-10-25 (see the commit history). The field is left unchanged in `k1_v1` because the
+  published run pins the file's SHA-256 (`527243b5...`); it is corrected in `k1_v2`.
 
 ## Corpus K2: Munich citizen services (planned, not included)
 
@@ -56,10 +59,6 @@ count tokens for chunking.
 | Reranker | BAAI/bge-reranker-base | 2cfc18c9415c912f9d8155881c133215df768a70 | MIT |
 
 `fixtures/ci/cache/` holds embeddings and reranker scores these models computed for the MsbG CI slice.
-
-## Question set
-
-`data/questions/` is CC BY 4.0; see `data/questions/LICENSE.md` and `data/questions/DATASHEET.md`.
 
 ## LLM fixtures
 

@@ -12,7 +12,14 @@ from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, Profil
 from pruefstand.corpus.gii import load_units
 from pruefstand.io import read_jsonl, write_jsonl
 from pruefstand.questions.assemble import assemble
-from pruefstand.questions.review import export_review, import_review
+from pruefstand.questions.review import (
+    build_successor,
+    export_review,
+    merge_verdicts,
+    parse_verdicts,
+    successor_version,
+    verdicts_path,
+)
 
 questions_app = typer.Typer(no_args_is_help=True, help="Build, check and review the question set.")
 BATCH_DIR = Path("data/questions/batches")
@@ -90,14 +97,39 @@ def review_import(
     profile: ProfileOption = "full",
     config: ConfigOption = DEFAULT_CONFIG_PATH,
 ) -> None:
-    """Apply the owner's verdicts (accept / edit / reject) to the question set."""
+    """Record the owner's verdicts (accept / edit / reject) without touching the frozen question set.
+
+    Verdicts go to data/questions/review/<version>_verdicts.jsonl. Edits are applied, re-validated and written to
+    the next set (k1_v1 -> k1_v2); the configured set stays byte for byte as it is.
+    """
     cfg = load(profile, config)
     path = cfg.path(cfg["questions"]["path"])
-    questions, updated, errors = import_review(cfg.path(csv_path), read_jsonl(path), date.today().isoformat())
+    version = cfg["questions"]["version"]
+    questions = read_jsonl(path)
+    verdicts, errors = parse_verdicts(cfg.path(csv_path), questions, date.today().isoformat())
     if errors:
         _fail(errors)
-    write_jsonl(path, questions)
-    typer.echo(f"updated {updated} questions")
+    target = verdicts_path(path, version)
+    merged = merge_verdicts(read_jsonl(target) if target.exists() else [], verdicts)
+    successor = successor_version(version)
+    edits = [verdict for verdict in merged if verdict["status"] == "edit"]
+    new_questions: list[dict] = []
+    if edits:
+        new_questions, errors = build_successor(questions, merged, _units_by_id(cfg), version)
+        if errors:
+            _fail(errors)
+    write_jsonl(target, merged)
+    typer.echo(
+        f"recorded {len(verdicts)} verdicts ({len(merged)} in total) in {target.relative_to(cfg.root)}"
+    )
+    if edits:
+        successor_path = path.with_name(f"{successor}.jsonl")
+        write_jsonl(successor_path, new_questions)
+        typer.echo(
+            f"wrote {len(new_questions)} questions with {len(edits)} edits to {successor_path.relative_to(cfg.root)}; "
+            f"{path.relative_to(cfg.root)} is unchanged. Use the new set by setting questions.path and "
+            f"questions.version to {successor} in pruefstand.toml."
+        )
 
 
 def register(app: typer.Typer) -> None:

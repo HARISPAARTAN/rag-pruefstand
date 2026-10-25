@@ -19,6 +19,7 @@ from pruefstand.metrics import (
     passage_spans,
     validate_gold,
 )
+from pruefstand.questions.review import apply_checked_verdicts, verdicts_path
 from pruefstand.retrieval.bm25 import BM25Index
 from pruefstand.retrieval.cache import EmbeddingCache, RerankCache
 from pruefstand.retrieval.dense import NORMALIZE, DenseIndex
@@ -50,6 +51,9 @@ def load_questions(cfg: Config) -> list[dict]:
     questions = read_jsonl(path)
     if not questions:
         raise PruefstandError(f"no questions in {cfg['questions']['path']}")
+    verdicts = verdicts_path(path, cfg["questions"]["version"])
+    if verdicts.is_file():  # the set itself stays frozen; accept and reject verdicts live next to it
+        apply_checked_verdicts(questions, read_jsonl(verdicts))
     return questions
 
 

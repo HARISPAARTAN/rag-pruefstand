@@ -1,14 +1,19 @@
+import copy
 import csv
 
 import pytest
 
 from pruefstand.corpus.gii import parse_law_xml, read_xml_from_zip
+from pruefstand.errors import PruefstandError
 from pruefstand.questions.filters import copy_ratio, jaccard, lexical_overlap, numbers_supported, run_filters
 from pruefstand.questions.review import (
+    build_successor,
     export_review,
-    import_review,
+    merge_verdicts,
+    parse_verdicts,
     review_quotas,
     sample_for_review,
+    successor_version,
     unit_context,
 )
 from pruefstand.questions.schema import ABSTAIN_ANSWER, check_distribution, validate_authored
@@ -151,13 +156,44 @@ def test_run_filters_flags_copy_and_duplicates(units_by_id):
     assert any(index == 2 and "near duplicate of record 1" in problem for index, problem in errors)
 
 
-def test_review_roundtrip(tmp_path, units_by_id):
+def _write_sheet(path, rows):
+    with open(path, "w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+QUESTION_TEXTS = (
+    "Muss man für einen Wechsel des Messstellenbetreibers extra bezahlen?",
+    "Welche Frist gilt für die Anmeldung einer neuen Messeinrichtung beim Netzbetreiber?",
+    "Wer darf intelligente Messsysteme einbauen und betreiben?",
+    "Wie hoch ist die Vergütung für Strom aus Kernfusion?",
+)
+
+
+def _reviewed_set():
     questions = []
     for index, kind in enumerate(["factoid", "factoid", "definition", "unanswerable"], start=1):
-        overrides = {"type": kind}
+        overrides = {"type": kind, "question_de": QUESTION_TEXTS[index - 1]}
         if kind == "unanswerable":
             overrides.update(gold_unit_ids=[], gold_passage_de="", gold_answer_de=ABSTAIN_ANSWER)
-        questions.append({"qid": f"k1v1-{index:04d}", "law": "messbg", **record(**overrides)})
+        questions.append(
+            {
+                "qid": f"k1v1-{index:04d}",
+                "law": "messbg",
+                **record(**overrides),
+                "provenance": {"created_at": "2026-10-26", "filters": {"passed": True}},
+                "review": {"status": "pending", "reviewed_at": None, "note": ""},
+            }
+        )
+    return questions
+
+
+def test_review_roundtrip_records_verdicts_and_builds_a_successor_without_touching_the_set(
+    tmp_path, units_by_id
+):
+    questions = _reviewed_set()
+    frozen = copy.deepcopy(questions)
     assert sample_for_review(questions, 8, 1) == sample_for_review(questions, 8, 1)
     sheet = tmp_path / "review.csv"
     assert export_review(questions, units_by_id, sheet, n=8, seed=1) == 4
@@ -166,16 +202,66 @@ def test_review_roundtrip(tmp_path, units_by_id):
     rows[0]["verdict"] = "edit"
     rows[0]["edited_question_de"] = "Kostet der Wechsel des Messstellenbetreibers etwas?"
     rows[1]["verdict"] = "accept"
-    with open(sheet, "w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
-    updated, count, errors = import_review(sheet, questions, "2026-11-01")
-    assert errors == [] and count == 2
-    assert updated[0]["question_de"] == "Kostet der Wechsel des Messstellenbetreibers etwas?"
-    assert updated[0]["review"]["original"]["question_de"].startswith("Muss man")
-    assert updated[1]["review"]["status"] == "accept"
-    assert "review" not in updated[2]
+    _write_sheet(sheet, rows)
+    verdicts, errors = parse_verdicts(sheet, questions, "2026-11-01")
+    assert errors == [] and [v["status"] for v in verdicts] == ["edit", "accept"]
+    assert verdicts[0]["original"]["question_de"].startswith("Muss man")
+    assert verdicts[0]["edited_question_de"] == "Kostet der Wechsel des Messstellenbetreibers etwas?"
+    assert "original" not in verdicts[1] and "edited_question_de" not in verdicts[1]
+    assert questions == frozen  # parsing applies nothing to the frozen set
+    successor, errors = build_successor(questions, verdicts, units_by_id, "k1_v1")
+    assert errors == []
+    assert successor[0]["question_de"] == "Kostet der Wechsel des Messstellenbetreibers etwas?"
+    assert successor[0]["review"]["status"] == "edit"
+    assert successor[0]["review"]["original"]["question_de"].startswith("Muss man")
+    assert successor[1]["review"]["status"] == "accept" and successor[2]["review"]["status"] == "pending"
+    assert all(r["provenance"]["created_at"] == "2026-10-25" for r in successor)
+    assert all(r["provenance"]["created_at_corrected_from"] == "2026-10-26" for r in successor)
+    assert all(r["provenance"]["derived_from"] == "k1_v1" for r in successor)
+    assert successor[0]["provenance"]["filters"]["passed"] is True
+    assert questions == frozen
+
+
+def test_a_second_edit_of_the_same_question_keeps_the_original_wording(tmp_path, units_by_id):
+    questions = _reviewed_set()
+    sheet = tmp_path / "review.csv"
+    export_review(questions, units_by_id, sheet, n=8, seed=1)
+    with open(sheet, encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    first = []
+    for text in ("Kostet der Wechsel etwas?", "Ist der Wechsel des Messstellenbetreibers kostenfrei?"):
+        rows[0]["verdict"], rows[0]["edited_question_de"] = "edit", text
+        _write_sheet(sheet, rows)
+        verdicts, errors = parse_verdicts(sheet, questions, "2026-11-01")
+        assert errors == []
+        first = merge_verdicts(first, verdicts)
+    assert len(first) == 1 and first[0]["edited_question_de"].startswith("Ist der Wechsel")
+    assert first[0]["original"]["question_de"].startswith("Muss man")
+
+
+def test_edits_are_validated_again_before_they_enter_the_successor(units_by_id):
+    questions = _reviewed_set()
+    verdict = {
+        "qid": "k1v1-0001",
+        "status": "edit",
+        "reviewed_at": "2026-11-01",
+        "note": "",
+        "original": {"question_de": questions[0]["question_de"], "gold_answer_de": ""},
+        "edited_question_de": "Das ist keine Frage",
+    }
+    _, errors = build_successor(questions, [verdict], units_by_id, "k1_v1")
+    assert errors == ["k1v1-0001: question_de must end with '?'"]
+    verdict["edited_question_de"] = (
+        "Darf für den Wechsel des Messstellenbetreibers kein gesondertes Entgelt erhoben werden?"
+    )
+    _, errors = build_successor(questions, [verdict], units_by_id, "k1_v1")
+    assert any("copies" in problem for problem in errors)
+
+
+def test_successor_version_counts_up():
+    assert successor_version("k1_v1") == "k1_v2" and successor_version("k1_v9") == "k1_v10"
+    with pytest.raises(PruefstandError):
+        successor_version("k1")
 
 
 def test_review_import_rejects_bad_verdict(tmp_path, units_by_id):
@@ -185,9 +271,10 @@ def test_review_import_rejects_bad_verdict(tmp_path, units_by_id):
     with open(sheet, encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
     rows[0]["verdict"] = "vielleicht"
-    with open(sheet, "w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
-    _, count, errors = import_review(sheet, questions, "2026-11-01")
-    assert count == 0 and "verdict 'vielleicht'" in errors[0]
+    _write_sheet(sheet, rows)
+    verdicts, errors = parse_verdicts(sheet, questions, "2026-11-01")
+    assert verdicts == [] and "verdict 'vielleicht'" in errors[0]
+    rows[0]["verdict"] = "edit"
+    _write_sheet(sheet, rows)
+    _, errors = parse_verdicts(sheet, questions, "2026-11-01")
+    assert "needs an edited question or answer" in errors[0]

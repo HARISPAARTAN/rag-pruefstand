@@ -13,9 +13,19 @@ and full provenance. File: `data/questions/k1_v1.jsonl` (one JSON object per lin
 acting as the implementing agent of this repository) while it read the law texts. No question has been checked by a
 human yet. A stratified sample of 100 questions is in `review/k1_v1_review.csv`: all 24 unanswerable questions plus 76
 answerable ones, drawn by type in proportion to the type sizes (21 factoid, 17 definition, 17 colloquial, 13 crossref,
-8 number). The owner's verdicts (accept, edit, reject) will be imported with `pruefstand questions review-import` and
-recorded per question in `review`. Until then, treat every question and gold answer as unverified. Results are reported
-on all 240 questions and, once the check is done, separately on the checked subset.
+8 number). The owner's verdicts (accept, edit, reject) will be imported with `pruefstand questions review-import`. The
+command never rewrites `k1_v1.jsonl`: verdicts go to `review/k1_v1_verdicts.jsonl`, and every edit goes into a new set
+`k1_v2.jsonl` (the same questions with the edited wording, the verdicts in `review`, the original wording kept in
+`review.original`, edited records validated and filtered again). Until then, treat every question and gold answer as
+unverified. Results are reported on all 240 questions and, once the check is done, separately on the checked subset.
+
+**Dating error in `provenance.created_at`.** All 240 records of `k1_v1.jsonl` (and the 30 records of
+`fixtures/ci/questions.jsonl`) carry `provenance.created_at = 2026-10-26`. That date comes from a clock assumption of the
+authoring agent and is wrong: the questions were written and revised on 2026-10-25 (see the commit history; the report and
+this datasheet use 2026-10-25). The field is left unchanged in `k1_v1` because the published run pins the SHA-256 of the
+file (`527243b5afeedcec7b7d7c31b3469f2b9352e6cdf95f5b1e2cfbfc75c6d03217`) and the retrieval results do not read the
+field. `k1_v2` corrects it to 2026-10-25 and records the old value in `provenance.created_at_corrected_from`. A unit test
+pins the known value so that nobody changes `k1_v1` silently.
 
 ## Author and judge are the same model
 
@@ -135,4 +145,6 @@ about a real case.
 ## Distribution and maintenance
 
 Distributed in this repository under CC BY 4.0. Corrections go into a new version (`k1_v2`); `k1_v1` stays frozen from
-the first published run so published numbers remain reproducible.
+the first published run so published numbers remain reproducible. `pruefstand questions review-import` follows this rule:
+it writes verdicts to `data/questions/review/<version>_verdicts.jsonl` and edits to the next set id, and leaves the
+configured set byte for byte as it was. Which set a run used is recorded by its SHA-256 in `manifest.json`.
