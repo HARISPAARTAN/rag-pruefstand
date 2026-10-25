@@ -1,0 +1,2125 @@
+{
+  "generation": {
+    "status": "pending_live_run"
+  },
+  "latency": {
+    "configs": {
+      "bm25-C1": {
+        "embed": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.2511,
+          "p95": 0.28377
+        },
+        "total": {
+          "p50": 0.2511,
+          "p95": 0.28377
+        }
+      },
+      "bm25-C2": {
+        "embed": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.2909,
+          "p95": 0.35012
+        },
+        "total": {
+          "p50": 0.2909,
+          "p95": 0.35012
+        }
+      },
+      "e5+rr-C1": {
+        "embed": {
+          "p50": 23.0208,
+          "p95": 27.12811
+        },
+        "rerank": {
+          "p50": 1841.87185,
+          "p95": 1888.008715
+        },
+        "search": {
+          "p50": 0.4725,
+          "p95": 0.590525
+        },
+        "total": {
+          "p50": 1867.68035,
+          "p95": 1913.437705
+        }
+      },
+      "e5+rr-C2": {
+        "embed": {
+          "p50": 22.4759,
+          "p95": 26.34719
+        },
+        "rerank": {
+          "p50": 1597.4687,
+          "p95": 1681.896255
+        },
+        "search": {
+          "p50": 0.6649,
+          "p95": 0.8238
+        },
+        "total": {
+          "p50": 1629.1345,
+          "p95": 1705.859045
+        }
+      },
+      "e5-C1": {
+        "embed": {
+          "p50": 23.0208,
+          "p95": 27.12811
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.4725,
+          "p95": 0.590525
+        },
+        "total": {
+          "p50": 23.4731,
+          "p95": 27.58697
+        }
+      },
+      "e5-C2": {
+        "embed": {
+          "p50": 22.4759,
+          "p95": 26.34719
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.6649,
+          "p95": 0.8238
+        },
+        "total": {
+          "p50": 23.2007,
+          "p95": 27.08696
+        }
+      },
+      "hyb+rr-C1": {
+        "embed": {
+          "p50": 23.0208,
+          "p95": 27.12811
+        },
+        "rerank": {
+          "p50": 1821.84375,
+          "p95": 1891.195595
+        },
+        "search": {
+          "p50": 0.8369,
+          "p95": 0.9531
+        },
+        "total": {
+          "p50": 1845.34735,
+          "p95": 1916.743465
+        }
+      },
+      "hyb+rr-C2": {
+        "embed": {
+          "p50": 22.4759,
+          "p95": 26.34719
+        },
+        "rerank": {
+          "p50": 1591.18635,
+          "p95": 1671.096445
+        },
+        "search": {
+          "p50": 1.08745,
+          "p95": 1.23577
+        },
+        "total": {
+          "p50": 1617.6144,
+          "p95": 1695.45388
+        }
+      },
+      "hyb-C1": {
+        "embed": {
+          "p50": 23.0208,
+          "p95": 27.12811
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.8369,
+          "p95": 0.9531
+        },
+        "total": {
+          "p50": 23.8319,
+          "p95": 27.98667
+        }
+      },
+      "hyb-C2": {
+        "embed": {
+          "p50": 22.4759,
+          "p95": 26.34719
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 1.08745,
+          "p95": 1.23577
+        },
+        "total": {
+          "p50": 23.61545,
+          "p95": 27.53454
+        }
+      },
+      "mini-C1": {
+        "embed": {
+          "p50": 5.9696,
+          "p95": 7.63388
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.39425,
+          "p95": 0.497335
+        },
+        "total": {
+          "p50": 6.3783,
+          "p95": 8.110205
+        }
+      },
+      "mini-C2": {
+        "embed": {
+          "p50": 5.4748,
+          "p95": 6.50371
+        },
+        "rerank": {
+          "p50": 0.0,
+          "p95": 0.0
+        },
+        "search": {
+          "p50": 0.5031,
+          "p95": 0.583225
+        },
+        "total": {
+          "p50": 5.98375,
+          "p95": 7.03211
+        }
+      }
+    },
+    "machine": {
+      "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+      "os": "Windows-11-10.0.26200-SP0",
+      "python": "3.13.11"
+    },
+    "n_questions": 50,
+    "rerank_depth": 20
+  },
+  "retrieval": {
+    "comparisons": [
+      {
+        "a": "hyb+rr-C2",
+        "b": "bm25-C2",
+        "diff": 0.171296,
+        "hi": 0.231481,
+        "lo": 0.113426,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "hyb+rr-C2",
+        "b": "bm25-C2",
+        "diff": 0.183574,
+        "hi": 0.229811,
+        "lo": 0.139714,
+        "metric": "ndcg@10",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "e5-C2",
+        "b": "mini-C2",
+        "diff": 0.408179,
+        "hi": 0.473785,
+        "lo": 0.34103,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "e5-C2",
+        "b": "mini-C2",
+        "diff": 0.38707,
+        "hi": 0.435653,
+        "lo": 0.33652,
+        "metric": "ndcg@10",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "hyb-C2",
+        "b": "e5-C2",
+        "diff": 0.005401,
+        "hi": 0.053241,
+        "lo": -0.043981,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "no_measurable_difference"
+      },
+      {
+        "a": "hyb-C2",
+        "b": "e5-C2",
+        "diff": 0.001815,
+        "hi": 0.039325,
+        "lo": -0.033858,
+        "metric": "ndcg@10",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "no_measurable_difference"
+      },
+      {
+        "a": "e5+rr-C2",
+        "b": "e5-C2",
+        "diff": 0.076389,
+        "hi": 0.136574,
+        "lo": 0.020775,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "e5+rr-C2",
+        "b": "e5-C2",
+        "diff": 0.080062,
+        "hi": 0.12219,
+        "lo": 0.038847,
+        "metric": "ndcg@10",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "hyb+rr-C2",
+        "b": "hyb-C2",
+        "diff": 0.058642,
+        "hi": 0.109568,
+        "lo": 0.006154,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "hyb+rr-C2",
+        "b": "hyb-C2",
+        "diff": 0.073622,
+        "hi": 0.109975,
+        "lo": 0.037753,
+        "metric": "ndcg@10",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      {
+        "a": "bm25-C2",
+        "b": "bm25-C1",
+        "diff": -0.025463,
+        "hi": 0.023148,
+        "lo": -0.071759,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "cross_chunking",
+        "valid": true,
+        "verdict": "no_measurable_difference"
+      },
+      {
+        "a": "e5-C2",
+        "b": "e5-C1",
+        "diff": -0.009259,
+        "hi": 0.046296,
+        "lo": -0.06713,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "cross_chunking",
+        "valid": true,
+        "verdict": "no_measurable_difference"
+      },
+      {
+        "a": "hyb+rr-C2",
+        "b": "hyb+rr-C1",
+        "diff": 0.008488,
+        "hi": 0.06713,
+        "lo": -0.044753,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "cross_chunking",
+        "valid": true,
+        "verdict": "no_measurable_difference"
+      }
+    ],
+    "corpus": {
+      "mean_tokens_C1": 349.47,
+      "mean_tokens_C2": 142.94,
+      "n_chunks_C1": 1348,
+      "n_chunks_C2": 2826,
+      "n_units": 2523,
+      "units_per_law": {
+        "eeg_2014": 601,
+        "enfg": 175,
+        "enwg_2005": 1330,
+        "kwkg_2016": 197,
+        "messbg": 220
+      }
+    },
+    "headline": {
+      "best": {
+        "config_id": "hyb+rr-C2",
+        "hi": 0.761574,
+        "highest_point_estimate": {
+          "config_id": "e5+rr-C2",
+          "hi": 0.773939,
+          "lo": 0.661227,
+          "mean": 0.718364,
+          "n": 216
+        },
+        "lo": 0.6489,
+        "mean": 0.706019,
+        "n": 216,
+        "note": "Pre-declared headline configuration, not the best configuration: it was fixed before the run. The key is called 'best' for historical reasons (renaming it would change the configuration hash). highest_point_estimate names the variant with the highest recall@5 mean; where it is another variant, no comparison between the two was declared.",
+        "role": "pre-declared headline configuration",
+        "role_de": "vorab festgelegte Hauptkonfiguration"
+      },
+      "dense_vs_english": {
+        "a": "e5-C2",
+        "b": "mini-C2",
+        "diff": 0.408179,
+        "hi": 0.473785,
+        "lo": 0.34103,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      },
+      "stack_vs_lexical": {
+        "a": "hyb+rr-C2",
+        "b": "bm25-C2",
+        "diff": 0.171296,
+        "hi": 0.231481,
+        "lo": 0.113426,
+        "metric": "recall@5",
+        "n": 216,
+        "scope": "within_chunking",
+        "valid": true,
+        "verdict": "better"
+      }
+    },
+    "metric_notes": {
+      "cross_chunking_metrics": [
+        "recall@1",
+        "recall@3",
+        "recall@5",
+        "recall@10",
+        "mrr@10"
+      ],
+      "text": "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k, counted with the e5 tokenizer over the full chunk text including the C2 header line (mean_tokens_C1/C2 in the corpus block count the chunk body only). The reranker reads at most max_length tokens of each (query, chunk) pair: truncation.<chunking>.reranker gives the share of reranked top-k pairs that lose their tail, next to the embedder table. The headline block names the configuration declared in advance, not the best one: see headline.best.note.",
+      "within_chunking_metrics": [
+        "ndcg@10"
+      ]
+    },
+    "n_answerable": 216,
+    "n_bootstrap": 2000,
+    "n_checked": 0,
+    "n_questions": 240,
+    "question_set": "k1_v1",
+    "question_types": {
+      "colloquial": 48,
+      "crossref": 36,
+      "definition": 48,
+      "factoid": 60,
+      "number": 24,
+      "unanswerable": 24
+    },
+    "relevance": {
+      "long_unit_chars": 2000,
+      "min_overlap_chars": 200,
+      "min_overlap_share": 0.5,
+      "n_passage_based_gold_units": 62,
+      "n_passage_based_questions": 62,
+      "rule": "Gold units of at most 2000 characters: a chunk is relevant when it covers at least min(200 characters, 50% of the unit). Longer gold units: a chunk is relevant only when it overlaps an excerpt of the gold passage (located in the unit text) by at least min(200 characters, 50% of the excerpt)."
+    },
+    "run_id": "full-2026-10-25",
+    "seed": 20261025,
+    "truncation": {
+      "C1": {
+        "e5": {
+          "max_seq_length": 512,
+          "mean_tokens": 353.61,
+          "mean_visible_share": 1.0,
+          "n_chunks": 1348,
+          "n_truncated": 0,
+          "truncation_rate": 0.0
+        },
+        "mini": {
+          "max_seq_length": 512,
+          "mean_tokens": 555.17,
+          "mean_visible_share": 0.9213,
+          "n_chunks": 1348,
+          "n_truncated": 1244,
+          "truncation_rate": 0.9228
+        },
+        "reranker": {
+          "max_length": 384,
+          "mean_tokens": 376.19,
+          "n_pairs": 4320,
+          "n_truncated": 653,
+          "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+          "truncation_rate": 0.1512
+        }
+      },
+      "C2": {
+        "e5": {
+          "max_seq_length": 512,
+          "mean_tokens": 166.38,
+          "mean_visible_share": 1.0,
+          "n_chunks": 2826,
+          "n_truncated": 0,
+          "truncation_rate": 0.0
+        },
+        "mini": {
+          "max_seq_length": 512,
+          "mean_tokens": 254.7,
+          "mean_visible_share": 0.9925,
+          "n_chunks": 2826,
+          "n_truncated": 266,
+          "truncation_rate": 0.0941
+        },
+        "reranker": {
+          "max_length": 384,
+          "mean_tokens": 210.68,
+          "n_pairs": 4320,
+          "n_truncated": 186,
+          "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+          "truncation_rate": 0.0431
+        }
+      }
+    },
+    "variants": {
+      "bm25-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.216737,
+              "lo": 0.053686,
+              "mean": 0.129383,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.270833,
+              "lo": 0.0625,
+              "mean": 0.166667,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.731864,
+              "lo": 0.544869,
+              "mean": 0.63838,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.777894,
+              "lo": 0.541667,
+              "mean": 0.666667,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.353256,
+              "lo": 0.178648,
+              "mean": 0.264596,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.5,
+              "lo": 0.229167,
+              "mean": 0.375,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.784435,
+              "lo": 0.607899,
+              "mean": 0.696873,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.9,
+              "lo": 0.7,
+              "mean": 0.8,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.971478,
+              "lo": 0.818944,
+              "mean": 0.904511,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.875,
+              "mean": 0.958333,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 349.88,
+          "10": 3490.47,
+          "3": 1049.95,
+          "5": 1750.22
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.512228,
+            "lo": 0.397819,
+            "mean": 0.454227,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.54087,
+            "lo": 0.433937,
+            "mean": 0.488025,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.374248,
+            "lo": 0.258488,
+            "mean": 0.315586,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.712191,
+            "lo": 0.594136,
+            "mean": 0.652778,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.5386,
+            "lo": 0.412789,
+            "mean": 0.474537,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.621914,
+            "lo": 0.496914,
+            "mean": 0.560185,
+            "n": 216
+          }
+        }
+      },
+      "bm25-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.201448,
+              "lo": 0.048217,
+              "mean": 0.120082,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.270833,
+              "lo": 0.0625,
+              "mean": 0.166667,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.643872,
+              "lo": 0.463411,
+              "mean": 0.55476,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.638889,
+              "lo": 0.439815,
+              "mean": 0.541667,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.217125,
+              "lo": 0.086553,
+              "mean": 0.149033,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.354167,
+              "lo": 0.104167,
+              "mean": 0.229167,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.874842,
+              "lo": 0.726843,
+              "mean": 0.802941,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.966667,
+              "lo": 0.8,
+              "mean": 0.883333,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 1.0,
+              "lo": 0.953866,
+              "mean": 0.984622,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 154.38,
+          "10": 1751.96,
+          "3": 493.46,
+          "5": 844.56
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.535261,
+            "lo": 0.413629,
+            "mean": 0.474836,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.540566,
+            "lo": 0.427997,
+            "mean": 0.484705,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.414352,
+            "lo": 0.290895,
+            "mean": 0.352623,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.662037,
+            "lo": 0.537809,
+            "mean": 0.600309,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.529321,
+            "lo": 0.402739,
+            "mean": 0.465278,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.598765,
+            "lo": 0.472994,
+            "mean": 0.534722,
+            "n": 216
+          }
+        }
+      },
+      "e5+rr-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.526905,
+              "lo": 0.308895,
+              "mean": 0.417219,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.645833,
+              "lo": 0.375,
+              "mean": 0.5,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.765264,
+              "lo": 0.577291,
+              "mean": 0.675476,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.814815,
+              "lo": 0.583333,
+              "mean": 0.703704,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.565937,
+              "lo": 0.33881,
+              "mean": 0.45224,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.708333,
+              "lo": 0.4375,
+              "mean": 0.583333,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.822276,
+              "lo": 0.616307,
+              "mean": 0.722133,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.866667,
+              "lo": 0.65,
+              "mean": 0.766667,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.969244,
+              "lo": 0.830342,
+              "mean": 0.907485,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 350.17,
+          "10": 3499.34,
+          "3": 1050.15,
+          "5": 1750.45
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.634471,
+            "lo": 0.522364,
+            "mean": 0.579389,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.657946,
+            "lo": 0.553222,
+            "mean": 0.607217,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.489198,
+            "lo": 0.367265,
+            "mean": 0.429012,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.80787,
+            "lo": 0.695216,
+            "mean": 0.751543,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.679012,
+            "lo": 0.556289,
+            "mean": 0.618056,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.738445,
+            "lo": 0.62037,
+            "mean": 0.682099,
+            "n": 216
+          }
+        }
+      },
+      "e5+rr-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.561711,
+              "lo": 0.327388,
+              "mean": 0.442701,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.645833,
+              "lo": 0.354167,
+              "mean": 0.5,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.727115,
+              "lo": 0.557114,
+              "mean": 0.644124,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.791782,
+              "lo": 0.592593,
+              "mean": 0.699074,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.580074,
+              "lo": 0.336657,
+              "mean": 0.459209,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.666667,
+              "lo": 0.375,
+              "mean": 0.520833,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.963093,
+              "lo": 0.858085,
+              "mean": 0.914451,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.883333,
+              "mean": 0.95,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 169.48,
+          "10": 1841.2,
+          "3": 530.84,
+          "5": 901.61
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.721328,
+            "lo": 0.609435,
+            "mean": 0.666801,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.72241,
+            "lo": 0.619587,
+            "mean": 0.672904,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.599537,
+            "lo": 0.472222,
+            "mean": 0.535494,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.820988,
+            "lo": 0.715278,
+            "mean": 0.76929,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.733796,
+            "lo": 0.616512,
+            "mean": 0.676698,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.773939,
+            "lo": 0.661227,
+            "mean": 0.718364,
+            "n": 216
+          }
+        }
+      },
+      "e5-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.442284,
+              "lo": 0.230276,
+              "mean": 0.337953,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.583333,
+              "lo": 0.311979,
+              "mean": 0.4375,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.678264,
+              "lo": 0.486902,
+              "mean": 0.585822,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.791667,
+              "lo": 0.564815,
+              "mean": 0.685185,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.542474,
+              "lo": 0.323555,
+              "mean": 0.434053,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.666667,
+              "lo": 0.375,
+              "mean": 0.520833,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.777763,
+              "lo": 0.579493,
+              "mean": 0.68471,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.883333,
+              "lo": 0.666667,
+              "mean": 0.783333,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.881444,
+              "lo": 0.671926,
+              "mean": 0.780585,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.875,
+              "mean": 0.958333,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 349.44,
+          "10": 3499.99,
+          "3": 1049.45,
+          "5": 1749.72
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.567964,
+            "lo": 0.45564,
+            "mean": 0.510356,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.597648,
+            "lo": 0.49437,
+            "mean": 0.546123,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.405093,
+            "lo": 0.283951,
+            "mean": 0.344136,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.775482,
+            "lo": 0.65816,
+            "mean": 0.716049,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.627315,
+            "lo": 0.503819,
+            "mean": 0.563272,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.713735,
+            "lo": 0.589487,
+            "mean": 0.651235,
+            "n": 216
+          }
+        }
+      },
+      "e5-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.59279,
+              "lo": 0.3495,
+              "mean": 0.473924,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.666667,
+              "lo": 0.395833,
+              "mean": 0.541667,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.587759,
+              "lo": 0.403177,
+              "mean": 0.49702,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.625,
+              "lo": 0.416667,
+              "mean": 0.518519,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.386157,
+              "lo": 0.204115,
+              "mean": 0.292312,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.5,
+              "lo": 0.229167,
+              "mean": 0.354167,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.900077,
+              "lo": 0.761297,
+              "mean": 0.834142,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.966667,
+              "lo": 0.816667,
+              "mean": 0.9,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 1.0,
+              "lo": 0.916667,
+              "mean": 0.972222,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.875,
+              "mean": 0.958333,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 154.8,
+          "10": 1786.62,
+          "3": 496.01,
+          "5": 859.53
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.630778,
+            "lo": 0.51747,
+            "mean": 0.573949,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.644471,
+            "lo": 0.539515,
+            "mean": 0.592842,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.502315,
+            "lo": 0.375772,
+            "mean": 0.440586,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.787037,
+            "lo": 0.675154,
+            "mean": 0.732253,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.633488,
+            "lo": 0.510012,
+            "mean": 0.572531,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.70216,
+            "lo": 0.582562,
+            "mean": 0.641975,
+            "n": 216
+          }
+        }
+      },
+      "hyb+rr-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.469056,
+              "lo": 0.253128,
+              "mean": 0.357684,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.583333,
+              "lo": 0.291667,
+              "mean": 0.4375,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.806288,
+              "lo": 0.635397,
+              "mean": 0.72537,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.842593,
+              "lo": 0.625,
+              "mean": 0.740741,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.566709,
+              "lo": 0.347578,
+              "mean": 0.459872,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.75,
+              "lo": 0.458333,
+              "mean": 0.604167,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.854636,
+              "lo": 0.672549,
+              "mean": 0.767037,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.916667,
+              "lo": 0.733333,
+              "mean": 0.833333,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.969244,
+              "lo": 0.818696,
+              "mean": 0.90203,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 349.91,
+          "10": 3500.4,
+          "3": 1050.18,
+          "5": 1750.21
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.638729,
+            "lo": 0.527578,
+            "mean": 0.584302,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.666309,
+            "lo": 0.562943,
+            "mean": 0.615866,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.489969,
+            "lo": 0.367284,
+            "mean": 0.428241,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.824074,
+            "lo": 0.715278,
+            "mean": 0.770833,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.664352,
+            "lo": 0.539352,
+            "mean": 0.607253,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.752315,
+            "lo": 0.635031,
+            "mean": 0.697531,
+            "n": 216
+          }
+        }
+      },
+      "hyb+rr-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.564336,
+              "lo": 0.322532,
+              "mean": 0.438235,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.604167,
+              "lo": 0.3125,
+              "mean": 0.458333,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.741592,
+              "lo": 0.589506,
+              "mean": 0.67077,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.800926,
+              "lo": 0.606481,
+              "mean": 0.708333,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.538312,
+              "lo": 0.307223,
+              "mean": 0.421497,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.645833,
+              "lo": 0.354167,
+              "mean": 0.5,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.962102,
+              "lo": 0.863153,
+              "mean": 0.915557,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.883333,
+              "mean": 0.95,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 167.11,
+          "10": 1848.33,
+          "3": 527.63,
+          "5": 907.09
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.714955,
+            "lo": 0.601573,
+            "mean": 0.657797,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.719481,
+            "lo": 0.617008,
+            "mean": 0.668279,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.584877,
+            "lo": 0.458333,
+            "mean": 0.521605,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.827932,
+            "lo": 0.723765,
+            "mean": 0.777006,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.73534,
+            "lo": 0.618056,
+            "mean": 0.678241,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.761574,
+            "lo": 0.6489,
+            "mean": 0.706019,
+            "n": 216
+          }
+        }
+      },
+      "hyb-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.416902,
+              "lo": 0.219802,
+              "mean": 0.316644,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.521354,
+              "lo": 0.25,
+              "mean": 0.395833,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.793973,
+              "lo": 0.598106,
+              "mean": 0.700803,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.865856,
+              "lo": 0.657292,
+              "mean": 0.768519,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.544526,
+              "lo": 0.312747,
+              "mean": 0.426231,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.583333,
+              "lo": 0.311979,
+              "mean": 0.4375,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.837372,
+              "lo": 0.661477,
+              "mean": 0.755478,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.95,
+              "lo": 0.766667,
+              "mean": 0.866667,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.969244,
+              "lo": 0.845232,
+              "mean": 0.917655,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 349.89,
+          "10": 3500.2,
+          "3": 1049.69,
+          "5": 1749.91
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.621833,
+            "lo": 0.506108,
+            "mean": 0.562891,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.64822,
+            "lo": 0.539053,
+            "mean": 0.593701,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.472222,
+            "lo": 0.35108,
+            "mean": 0.410494,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.803241,
+            "lo": 0.6875,
+            "mean": 0.74537,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.65434,
+            "lo": 0.527778,
+            "mean": 0.591821,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.724537,
+            "lo": 0.604167,
+            "mean": 0.665123,
+            "n": 216
+          }
+        }
+      },
+      "hyb-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.415839,
+              "lo": 0.217145,
+              "mean": 0.313096,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.5,
+              "lo": 0.25,
+              "mean": 0.375,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.701407,
+              "lo": 0.526661,
+              "mean": 0.616161,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.791782,
+              "lo": 0.569444,
+              "mean": 0.689815,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.378071,
+              "lo": 0.200877,
+              "mean": 0.287229,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.458333,
+              "lo": 0.208333,
+              "mean": 0.333333,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.946212,
+              "lo": 0.828741,
+              "mean": 0.890811,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 0.883333,
+              "mean": 0.95,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 1.0,
+              "lo": 1.0,
+              "mean": 1.0,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 162.58,
+          "10": 1802.02,
+          "3": 509.66,
+          "5": 881.19
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.620942,
+            "lo": 0.507375,
+            "mean": 0.565278,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.644896,
+            "lo": 0.541311,
+            "mean": 0.594657,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.48613,
+            "lo": 0.364198,
+            "mean": 0.426698,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.805556,
+            "lo": 0.697512,
+            "mean": 0.751543,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.625,
+            "lo": 0.500752,
+            "mean": 0.5625,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.70679,
+            "lo": 0.585648,
+            "mean": 0.647377,
+            "n": 216
+          }
+        }
+      },
+      "mini-C1": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.0888,
+              "lo": 0.008972,
+              "mean": 0.04295,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.166667,
+              "lo": 0.020833,
+              "mean": 0.083333,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.426336,
+              "lo": 0.215803,
+              "mean": 0.316721,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.398264,
+              "lo": 0.180556,
+              "mean": 0.287037,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.217215,
+              "lo": 0.091472,
+              "mean": 0.153859,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.375,
+              "lo": 0.125,
+              "mean": 0.25,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.348287,
+              "lo": 0.170982,
+              "mean": 0.256392,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.467083,
+              "lo": 0.233333,
+              "mean": 0.35,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.614229,
+              "lo": 0.326513,
+              "mean": 0.469523,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 0.791667,
+              "lo": 0.458333,
+              "mean": 0.625,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 338.09,
+          "10": 3469.94,
+          "3": 1033.76,
+          "5": 1729.27
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.235067,
+            "lo": 0.149314,
+            "mean": 0.191266,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.261738,
+            "lo": 0.177933,
+            "mean": 0.219911,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.117284,
+            "lo": 0.050154,
+            "mean": 0.082562,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.424402,
+            "lo": 0.298611,
+            "mean": 0.362654,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.263137,
+            "lo": 0.161227,
+            "mean": 0.209877,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.347222,
+            "lo": 0.233025,
+            "mean": 0.28858,
+            "n": 216
+          }
+        }
+      },
+      "mini-C2": {
+        "by_type": {
+          "colloquial": {
+            "ndcg@10": {
+              "hi": 0.142631,
+              "lo": 0.013144,
+              "mean": 0.072756,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.1875,
+              "lo": 0.020833,
+              "mean": 0.104167,
+              "n": 48
+            }
+          },
+          "crossref": {
+            "ndcg@10": {
+              "hi": 0.309179,
+              "lo": 0.121814,
+              "mean": 0.210029,
+              "n": 36
+            },
+            "recall@5": {
+              "hi": 0.319444,
+              "lo": 0.111111,
+              "mean": 0.208333,
+              "n": 36
+            }
+          },
+          "definition": {
+            "ndcg@10": {
+              "hi": 0.024178,
+              "lo": 0.0,
+              "mean": 0.008059,
+              "n": 48
+            },
+            "recall@5": {
+              "hi": 0.0625,
+              "lo": 0.0,
+              "mean": 0.020833,
+              "n": 48
+            }
+          },
+          "factoid": {
+            "ndcg@10": {
+              "hi": 0.383493,
+              "lo": 0.209101,
+              "mean": 0.296877,
+              "n": 60
+            },
+            "recall@5": {
+              "hi": 0.466667,
+              "lo": 0.233333,
+              "mean": 0.35,
+              "n": 60
+            }
+          },
+          "number": {
+            "ndcg@10": {
+              "hi": 0.802577,
+              "lo": 0.464111,
+              "mean": 0.633084,
+              "n": 24
+            },
+            "recall@5": {
+              "hi": 0.833333,
+              "lo": 0.458333,
+              "mean": 0.666667,
+              "n": 24
+            }
+          }
+        },
+        "checked_subset": {
+          "ndcg@10": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          },
+          "recall@5": {
+            "hi": null,
+            "lo": null,
+            "mean": null,
+            "n": 0
+          }
+        },
+        "mean_retrieved_tokens_at_k": {
+          "1": 79.58,
+          "10": 904.25,
+          "3": 254.02,
+          "5": 436.41
+        },
+        "metrics": {
+          "mrr@10": {
+            "hi": 0.232425,
+            "lo": 0.140905,
+            "mean": 0.184919,
+            "n": 216
+          },
+          "ndcg@10": {
+            "hi": 0.252717,
+            "lo": 0.16222,
+            "mean": 0.205772,
+            "n": 216
+          },
+          "recall@1": {
+            "hi": 0.159722,
+            "lo": 0.076389,
+            "mean": 0.115741,
+            "n": 216
+          },
+          "recall@10": {
+            "hi": 0.361111,
+            "lo": 0.243056,
+            "mean": 0.300926,
+            "n": 216
+          },
+          "recall@3": {
+            "hi": 0.259259,
+            "lo": 0.152778,
+            "mean": 0.203704,
+            "n": 216
+          },
+          "recall@5": {
+            "hi": 0.291667,
+            "lo": 0.18287,
+            "mean": 0.233796,
+            "n": 216
+          }
+        }
+      }
+    }
+  }
+}

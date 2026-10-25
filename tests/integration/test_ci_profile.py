@@ -37,7 +37,14 @@ def test_ci_profile_runs_offline_and_matches_golden(root, monkeypatch, no_networ
         if updating():
             write_json(golden_path, data)
         assert data == read_json(golden_path), f"{produced} differs from {golden_path.name}"
-    assert read_json(cfg.run_dir / "manifest.json")["stages"][-1] == "answer metrics"
+    report = (cfg.path(cfg["paths"]["reports_dir"]) / "results.md").read_text(encoding="utf-8")
+    golden_md = root / "tests" / "golden" / "ci_results.md"
+    if updating():
+        golden_md.write_bytes(report.encode("utf-8"))
+    assert report == golden_md.read_text(encoding="utf-8"), "results.md differs from ci_results.md"
+    assert "Synthetische Fixtures – keine Messung." in report
+    assert (cfg.path(cfg["paths"]["site_dir"]) / "index.html").exists()
+    assert read_json(cfg.run_dir / "manifest.json")["stages"][-1] == "report"
     # replay: recorded cost (cassette) and recomputed cost (costs.toml) are reported apart and agree here
     answers = read_jsonl(cfg.run_dir / "answers.jsonl")
     judgements = read_jsonl(cfg.run_dir / "judgements.jsonl")

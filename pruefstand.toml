@@ -62,6 +62,9 @@ files = ["config.json", "model.safetensors", "sentencepiece.bpe.model", "special
 [questions]
 path = "data/questions/k1_v1.jsonl"
 version = "k1_v1"
+# Stated in the report and the datasheet; the model wrote all questions while reading the law texts.
+authored = "2026-10-25"
+author_model = "claude-sonnet-5-5"
 
 [stats]
 bootstrap = 2000

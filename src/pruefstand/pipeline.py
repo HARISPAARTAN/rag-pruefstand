@@ -76,6 +76,12 @@ def stage_answer_metrics(cfg: Config) -> dict:
     return compute_answer_metrics(cfg)
 
 
+def stage_report(cfg: Config) -> list[str]:
+    from pruefstand.report.build import build_report
+
+    return build_report(cfg)
+
+
 def planned_stages(cfg: Config) -> list[tuple[str, Callable[[Config], object]]]:
     stages: list[tuple[str, Callable[[Config], object]]] = [
         ("corpus build", stage_corpus_build),
@@ -91,6 +97,7 @@ def planned_stages(cfg: Config) -> list[tuple[str, Callable[[Config], object]]]:
             ("judge", stage_judge),
             ("answer metrics", stage_answer_metrics),
         ]
+    stages.append(("report", stage_report))
     return stages
 
 
