@@ -488,7 +488,7 @@ wheels = [
 
 [[package]]
 name = "pruefstand"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
