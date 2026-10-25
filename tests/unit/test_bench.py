@@ -9,8 +9,21 @@ import numpy as np
 import pytest
 from typer.testing import CliRunner
 
-from pruefstand.aggregate import compute_retrieval_metrics, per_question_metrics, summary_lines
-from pruefstand.bench import ModelHub, hits_path, open_caches, retrieve_chunking, run_retrieval
+from pruefstand.aggregate import (
+    chunk_text_tokens,
+    compute_retrieval_metrics,
+    mean_tokens_at_k,
+    per_question_metrics,
+    summary_lines,
+)
+from pruefstand.bench import (
+    ModelHub,
+    hits_path,
+    measure_reranker_truncation,
+    open_caches,
+    retrieve_chunking,
+    run_retrieval,
+)
 from pruefstand.chunking import chunks_path, load_chunks
 from pruefstand.cli import app
 from pruefstand.config import Config, load_config
@@ -72,7 +85,8 @@ class FakeHub(ModelHub):
         return out
 
     def token_counts(self, name, texts):
-        return [len(re.findall(r"\w+", text)) for text in texts]  # one 'token' per word
+        # one 'token' per word; a (query, passage) pair counts both parts
+        return [len(re.findall(r"\w+", text if isinstance(text, str) else " ".join(text))) for text in texts]
 
 
 @pytest.fixture
@@ -132,6 +146,10 @@ def test_retrieval_metrics_latency_end_to_end(cfg):
     assert best["n"] == 6 and best["mean"] > 0.5
     assert len(result["comparisons"]) == 13
     assert result["headline"]["best"]["config_id"] == "hyb+rr-C2"
+    assert result["headline"]["best"]["role"] == "pre-declared headline configuration"
+    assert result["headline"]["best"]["role_de"] == "vorab festgelegte Hauptkonfiguration"
+    top = max(result["variants"], key=lambda c: result["variants"][c]["metrics"]["recall@5"]["mean"])
+    assert result["headline"]["best"]["highest_point_estimate"]["config_id"] == top
     assert (cfg.run_dir / "metrics.json").exists()
 
     latency = run_latency(cfg, hub)
@@ -279,11 +297,16 @@ def test_metrics_record_notes_tokens_and_truncation(cfg):
         assert mini["truncation_rate"] == round(sum(c > 40 for c in counts) / len(counts), 4)
         assert result["truncation"][chunking]["e5"]["max_seq_length"] == 512
     rows = read_jsonl(hits_path(cfg))
+    text_tokens = chunk_text_tokens(cfg)
     for config_id, variant in result["variants"].items():
         tokens = variant["mean_retrieved_tokens_at_k"]
         assert list(tokens) == ["1", "3", "5", "10"]
         assert tokens["1"] <= tokens["3"] <= tokens["5"] <= tokens["10"]
-        top1 = [r["ranked"][0]["n_tokens"] for r in rows if r["config_id"] == config_id and r["answerable"]]
+        top1 = [
+            text_tokens[r["ranked"][0]["chunk_id"]]
+            for r in rows
+            if r["config_id"] == config_id and r["answerable"]
+        ]
         assert tokens["1"] == round(sum(top1) / len(top1), 2)
     for comparison in result["comparisons"]:
         cross = comparison["a"].rsplit("-", 1)[1] != comparison["b"].rsplit("-", 1)[1]
@@ -360,6 +383,10 @@ def test_summary_prints_the_truncation_table_next_to_the_dense_versus_english_co
         assert f"{mini['n_truncated']}/{mini['n_chunks']}" in row
         assert f"{mini['truncation_rate'] * 100:.1f}%" in row
     assert any(line.split()[:2] == ["e5", "C2"] for line in lines)
+    for chunking in ("C1", "C2"):
+        reranker = result["truncation"][chunking]["reranker"]
+        row = next(line for line in lines if line.split()[:2] == ["reranker", chunking])
+        assert f"{reranker['n_truncated']}/{reranker['n_pairs']}" in row
     mini_c1 = next(line for line in lines if line.startswith("mini-C1 "))
     assert "truncated" in mini_c1
 
@@ -368,10 +395,53 @@ def test_truncation_is_not_measured_when_switched_off(cfg):
     cfg.data["retrieval"]["measure_truncation"] = False
     run_retrieval(cfg, FakeHub(cfg))
     result = compute_retrieval_metrics(cfg)
-    assert result["truncation"] == {"C1": {"e5": None, "mini": None}, "C2": {"e5": None, "mini": None}}
+    off = {"e5": None, "mini": None, "reranker": None}
+    assert result["truncation"] == {"C1": off, "C2": off}
     assert summary_lines(result)[-1] == "truncation: not measured (offline profile without model files)"
 
 
 def test_ci_profile_does_not_measure_truncation(root):
     assert load_config(root / "pruefstand.toml", "ci")["retrieval"]["measure_truncation"] is False
     assert "measure_truncation" not in load_config(root / "pruefstand.toml", "full")["retrieval"]
+
+
+def test_reranker_truncation_counts_the_reranked_top_k_pairs(cfg):
+    cfg.data["models"]["reranker"]["max_length"] = 25  # FakeHub counts words: some pairs exceed 25
+    hub = FakeHub(cfg)
+    run_retrieval(cfg, hub)
+    meta = read_json(cfg.run_dir / "retrieval_meta.json")["truncation"]
+    for chunking in ("C1", "C2"):
+        row = meta[chunking]["reranker"]
+        # 6 answerable questions x 2 reranked retrievers x at most 10 hits
+        assert 0 < row["n_pairs"] <= 6 * 2 * 10 and row["max_length"] == 25
+        assert 0 < row["n_truncated"] <= row["n_pairs"]
+        assert row["truncation_rate"] == round(row["n_truncated"] / row["n_pairs"], 4)
+        assert "reranked top-10" in row["scope"]
+
+
+def test_measure_reranker_truncation_updates_the_meta_without_retrieval(cfg):
+    cfg.data["models"]["reranker"]["max_length"] = 25
+    hub = FakeHub(cfg)
+    run_retrieval(cfg, hub)
+    before = read_json(cfg.run_dir / "retrieval_meta.json")
+    meta = read_json(cfg.run_dir / "retrieval_meta.json")
+    for chunking in meta["truncation"]:
+        del meta["truncation"][chunking]["reranker"]
+    from pruefstand.io import write_json
+
+    write_json(cfg.run_dir / "retrieval_meta.json", meta)
+    hits = hits_path(cfg).read_bytes()
+    measure_reranker_truncation(cfg, FakeHub(cfg))
+    assert read_json(cfg.run_dir / "retrieval_meta.json") == before
+    assert hits_path(cfg).read_bytes() == hits
+
+
+def test_retrieved_token_means_count_the_c2_header(cfg):
+    run_retrieval(cfg, FakeHub(cfg))
+    hits = read_jsonl(hits_path(cfg))
+    tokens = chunk_text_tokens(cfg)
+    c2 = load_chunks(chunks_path(cfg, "C2"))
+    assert all(tokens[chunk.chunk_id] > chunk.n_tokens for chunk in c2)  # header adds tokens
+    means = mean_tokens_at_k(hits, tokens)
+    body_only = sum(h["n_tokens"] for h in next(r for r in hits if r["config_id"] == "bm25-C2")["ranked"][:5])
+    assert means["bm25-C2"]["5"] > 0 and body_only > 0

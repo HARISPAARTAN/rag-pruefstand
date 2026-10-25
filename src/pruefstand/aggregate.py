@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter
 
 from pruefstand.bench import config_ids, hits_path, load_questions, meta_path
-from pruefstand.chunking import chunks_path, load_chunks
+from pruefstand.chunking import chunks_path, count_tokens, load_chunks, load_tokenizer
 from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
 from pruefstand.errors import PruefstandError
@@ -22,6 +22,8 @@ from pruefstand.stats import bootstrap_ci, paired_bootstrap
 TYPE_METRICS = ("recall@5", "ndcg@10")
 COMPARISON_METRICS = ("recall@5", "ndcg@10")
 CHECKED_STATUSES = ("accept", "edit")
+HEADLINE_ROLE = "pre-declared headline configuration"
+HEADLINE_ROLE_DE = "vorab festgelegte Hauptkonfiguration"
 
 
 def per_question_metrics(
@@ -40,8 +42,21 @@ def per_question_metrics(
     return table
 
 
-def mean_tokens_at_k(hits: list[dict]) -> dict[str, dict[str, float]]:
-    """config_id -> k -> mean number of retrieved chunk tokens in the top k (answerable questions).
+def chunk_text_tokens(cfg: Config) -> dict[str, int]:
+    """chunk_id -> e5 tokens of the full chunk text, header included (what a generator would be given).
+
+    The n_tokens in the hit rows count only the body of a C2 chunk (about 19 tokens of header missing per chunk).
+    """
+    tokenizer = load_tokenizer(str(cfg.path(cfg["tokenizer"]["path"])))
+    return {
+        chunk.chunk_id: count_tokens(tokenizer, chunk.text)
+        for chunking in cfg["retrieval"]["chunkings"]
+        for chunk in load_chunks(chunks_path(cfg, chunking))
+    }
+
+
+def mean_tokens_at_k(hits: list[dict], text_tokens: dict[str, int]) -> dict[str, dict[str, float]]:
+    """config_id -> k -> mean number of retrieved chunk tokens (header included) in the top k, answerable questions.
 
     Recall@k at equal k does not mean an equal context budget when chunks differ in length; these means make a
     token-budget comparison possible later.
@@ -52,7 +67,7 @@ def mean_tokens_at_k(hits: list[dict]) -> dict[str, dict[str, float]]:
             continue
         per_k = totals.setdefault(row["config_id"], {k: [] for k in K_VALUES})
         for k in K_VALUES:
-            per_k[k].append(sum(hit["n_tokens"] for hit in row["ranked"][:k]))
+            per_k[k].append(sum(text_tokens[hit["chunk_id"]] for hit in row["ranked"][:k]))
     return {
         config_id: {str(k): round(sum(values) / len(values), 2) for k, values in per_k.items()}
         for config_id, per_k in totals.items()
@@ -66,7 +81,7 @@ def corpus_stats(cfg: Config) -> dict:
         chunks = load_chunks(chunks_path(cfg, chunking))
         tokens = [chunk.n_tokens for chunk in chunks]
         stats[f"n_chunks_{chunking}"] = len(chunks)
-        stats[f"mean_tokens_{chunking}"] = round(sum(tokens) / len(tokens), 2) if tokens else 0.0
+        stats[f"mean_tokens_{chunking}"] = round(sum(tokens) / len(tokens), 2) if tokens else 0.0  # body only
     return stats
 
 
@@ -79,7 +94,8 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
         raise PruefstandError(f"{hits_path(cfg)} not found; run `pruefstand retrieve` first")
     hits = read_jsonl(hits_path(cfg))
     table = per_question_metrics(hits, questions)
-    tokens_at_k = mean_tokens_at_k(hits)
+    text_tokens = chunk_text_tokens(cfg)
+    tokens_at_k = mean_tokens_at_k(hits, text_tokens)
     qids = sorted(qid for qid, question in questions.items() if question["answerable"])
     checked = [qid for qid in qids if questions[qid].get("review", {}).get("status") in CHECKED_STATUSES]
     types = sorted({questions[qid]["type"] for qid in qids})
@@ -128,6 +144,8 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
             )
 
     headline_cfg = cfg["headline"]
+    top = max(variants, key=lambda config_id: variants[config_id]["metrics"]["recall@5"]["mean"])
+    highest = {"config_id": top, **variants[top]["metrics"]["recall@5"]}
 
     def find(a: str, b: str) -> dict:
         return next(c for c in comparisons if c["a"] == a and c["b"] == b and c["metric"] == "recall@5")
@@ -147,7 +165,12 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
                 "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares "
                 "retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of "
                 "the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking "
-                "nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k."
+                "nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k, counted with "
+                "the e5 tokenizer over the full chunk text including the C2 header line (mean_tokens_C1/C2 in the "
+                "corpus block count the chunk body only). The reranker reads at most max_length tokens of each "
+                "(query, chunk) pair: truncation.<chunking>.reranker gives the share of reranked top-k pairs that "
+                "lose their tail, next to the embedder table. The headline block names the configuration declared "
+                "in advance, not the best one: see headline.best.note."
             ),
         },
         "truncation": read_json(meta_path(cfg))["truncation"] if meta_path(cfg).is_file() else None,
@@ -159,6 +182,15 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
         "headline": {
             "best": {
                 "config_id": headline_cfg["best"],
+                "role": HEADLINE_ROLE,
+                "role_de": HEADLINE_ROLE_DE,
+                "highest_point_estimate": highest,
+                "note": (
+                    "Pre-declared headline configuration, not the best configuration: it was fixed before the "
+                    "run. The key is called 'best' for historical reasons (renaming it would change the "
+                    "configuration hash). highest_point_estimate names the variant with the highest recall@5 "
+                    "mean; where it is another variant, no comparison between the two was declared."
+                ),
                 **variants[headline_cfg["best"]]["metrics"]["recall@5"],
             },
             "dense_vs_english": find(*headline_cfg["dense_vs_english"]),
@@ -192,19 +224,27 @@ def summary_lines(result: dict) -> list[str]:
     lines = []
     for config_id, variant in result["variants"].items():
         r5 = variant["metrics"]["recall@5"]
+        tokens = variant["mean_retrieved_tokens_at_k"]["5"]
         lines.append(
             f"{config_id:12s} recall@5 {r5['mean']:.3f} [{r5['lo']:.3f}, {r5['hi']:.3f}]"
+            f"  context@5 {tokens:7.1f} tokens (header incl.)"
             f"{_truncation_note(result, config_id)}"
         )
-    versus = result["headline"]["dense_vs_english"]
+    headline = result["headline"]["best"]
     lines.append("")
+    lines.append(
+        f"{headline['role']}: {headline['config_id']} recall@5 {headline['mean']:.3f} "
+        f"[{headline['lo']:.3f}, {headline['hi']:.3f}]; highest point estimate: "
+        f"{headline['highest_point_estimate']['config_id']} {headline['highest_point_estimate']['mean']:.3f}"
+    )
+    versus = result["headline"]["dense_vs_english"]
     lines.append(
         f"dense vs English ({versus['a']} vs {versus['b']}): recall@5 diff {versus['diff']:+.3f} "
         f"[{versus['lo']:+.3f}, {versus['hi']:+.3f}] -> {versus['verdict']}"
     )
     truncation = result.get("truncation")
     if not truncation or not any(
-        row for per_model in truncation.values() for row in (per_model or {}).values()
+        row for per_chunking in truncation.values() for row in (per_chunking or {}).values()
     ):
         lines.append("truncation: not measured (offline profile without model files)")
         return lines
@@ -221,5 +261,12 @@ def summary_lines(result: dict) -> list[str]:
                 f"  {model:5s} {chunking:8s} {row['max_seq_length']:7d} "
                 f"{row['n_truncated']:>5d}/{row['n_chunks']:<6d} {row['truncation_rate'] * 100:6.1f}% "
                 f"{row['mean_visible_share'] * 100:7.1f}%"
+            )
+    for chunking, per_chunking in truncation.items():
+        row = (per_chunking or {}).get("reranker")
+        if row:
+            lines.append(
+                f"  reranker {chunking:4s} max_length {row['max_length']}: {row['n_truncated']}/{row['n_pairs']} "
+                f"(query, chunk) pairs of the reranked top-10 truncated = {row['truncation_rate'] * 100:.1f}%"
             )
     return lines

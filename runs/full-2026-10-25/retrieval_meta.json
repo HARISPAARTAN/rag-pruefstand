@@ -24,6 +24,14 @@
         "n_chunks": 1348,
         "n_truncated": 1244,
         "truncation_rate": 0.9228
+      },
+      "reranker": {
+        "max_length": 384,
+        "mean_tokens": 376.19,
+        "n_pairs": 4320,
+        "n_truncated": 653,
+        "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+        "truncation_rate": 0.1512
       }
     },
     "C2": {
@@ -42,6 +50,14 @@
         "n_chunks": 2826,
         "n_truncated": 266,
         "truncation_rate": 0.0941
+      },
+      "reranker": {
+        "max_length": 384,
+        "mean_tokens": 210.68,
+        "n_pairs": 4320,
+        "n_truncated": 186,
+        "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+        "truncation_rate": 0.0431
       }
     }
   }

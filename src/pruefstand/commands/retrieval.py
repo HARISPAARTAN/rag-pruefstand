@@ -7,6 +7,7 @@ from typing import Annotated
 import typer
 
 from pruefstand.aggregate import summary_lines
+from pruefstand.bench import measure_reranker_truncation
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, guarded, load
 from pruefstand.corpus.gii import load_units
 from pruefstand.pipeline import run_all, stage_latency, stage_metrics, stage_retrieve
@@ -47,6 +48,22 @@ def latency(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONF
     typer.echo(f"latency measured on {result.get('n_questions', 0)} questions")
 
 
+def rerank_truncation(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
+    """Measure how many reranked (query, chunk) pairs exceed the reranker's max_length (committed hits, no retrieval)."""
+    cfg = load(profile, config)
+    with guarded():
+        report = measure_reranker_truncation(cfg)
+    for chunking, per_chunking in report.items():
+        row = per_chunking.get("reranker")
+        if row:
+            typer.echo(
+                f"{chunking}: {row['n_truncated']}/{row['n_pairs']} pairs above {row['max_length']} tokens "
+                f"({row['truncation_rate'] * 100:.1f}%)"
+            )
+        else:
+            typer.echo(f"{chunking}: not measured")
+
+
 def metrics(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
     """Compute retrieval metrics with bootstrap intervals and paired comparisons."""
     cfg = load(profile, config)
@@ -84,6 +101,7 @@ def register(app: typer.Typer) -> None:
     app.add_typer(models_app, name="models")
     app.command("retrieve")(retrieve)
     app.command("latency")(latency)
+    app.command("rerank-truncation")(rerank_truncation)
     app.command("metrics")(metrics)
     app.command("search")(search)
     app.command("all")(all_stages)

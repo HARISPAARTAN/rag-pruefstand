@@ -175,9 +175,19 @@
     "best": {
       "config_id": "hyb+rr-C2",
       "hi": 0.761574,
+      "highest_point_estimate": {
+        "config_id": "e5+rr-C2",
+        "hi": 0.773939,
+        "lo": 0.661227,
+        "mean": 0.718364,
+        "n": 216
+      },
       "lo": 0.6489,
       "mean": 0.706019,
-      "n": 216
+      "n": 216,
+      "note": "Pre-declared headline configuration, not the best configuration: it was fixed before the run. The key is called 'best' for historical reasons (renaming it would change the configuration hash). highest_point_estimate names the variant with the highest recall@5 mean; where it is another variant, no comparison between the two was declared.",
+      "role": "pre-declared headline configuration",
+      "role_de": "vorab festgelegte Hauptkonfiguration"
     },
     "dense_vs_english": {
       "a": "e5-C2",
@@ -212,7 +222,7 @@
       "recall@10",
       "mrr@10"
     ],
-    "text": "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k.",
+    "text": "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k, counted with the e5 tokenizer over the full chunk text including the C2 header line (mean_tokens_C1/C2 in the corpus block count the chunk body only). The reranker reads at most max_length tokens of each (query, chunk) pair: truncation.<chunking>.reranker gives the share of reranked top-k pairs that lose their tail, next to the embedder table. The headline block names the configuration declared in advance, not the best one: see headline.best.note.",
     "within_chunking_metrics": [
       "ndcg@10"
     ]
@@ -257,6 +267,14 @@
         "n_chunks": 1348,
         "n_truncated": 1244,
         "truncation_rate": 0.9228
+      },
+      "reranker": {
+        "max_length": 384,
+        "mean_tokens": 376.19,
+        "n_pairs": 4320,
+        "n_truncated": 653,
+        "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+        "truncation_rate": 0.1512
       }
     },
     "C2": {
@@ -275,6 +293,14 @@
         "n_chunks": 2826,
         "n_truncated": 266,
         "truncation_rate": 0.0941
+      },
+      "reranker": {
+        "max_length": 384,
+        "mean_tokens": 210.68,
+        "n_pairs": 4320,
+        "n_truncated": 186,
+        "scope": "(query, chunk) pairs of the reranked top-10 of e5+rr and hyb+rr, answerable questions",
+        "truncation_rate": 0.0431
       }
     }
   },
@@ -367,10 +393,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 349.75,
-        "10": 3488.93,
-        "3": 1049.5,
-        "5": 1749.5
+        "1": 349.88,
+        "10": 3490.47,
+        "3": 1049.95,
+        "5": 1750.22
       },
       "metrics": {
         "mrr@10": {
@@ -499,10 +525,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 135.46,
-        "10": 1558.02,
-        "3": 436.29,
-        "5": 749.63
+        "1": 154.38,
+        "10": 1751.96,
+        "3": 493.46,
+        "5": 844.56
       },
       "metrics": {
         "mrr@10": {
@@ -631,10 +657,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 350.0,
-        "10": 3498.02,
-        "3": 1049.75,
-        "5": 1749.75
+        "1": 350.17,
+        "10": 3499.34,
+        "3": 1050.15,
+        "5": 1750.45
       },
       "metrics": {
         "mrr@10": {
@@ -763,10 +789,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 152.07,
-        "10": 1647.25,
-        "3": 476.05,
-        "5": 808.2
+        "1": 169.48,
+        "10": 1841.2,
+        "3": 530.84,
+        "5": 901.61
       },
       "metrics": {
         "mrr@10": {
@@ -895,10 +921,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 349.25,
-        "10": 3498.75,
-        "3": 1049.0,
-        "5": 1749.0
+        "1": 349.44,
+        "10": 3499.99,
+        "3": 1049.45,
+        "5": 1749.72
       },
       "metrics": {
         "mrr@10": {
@@ -1027,10 +1053,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 136.33,
-        "10": 1591.14,
-        "3": 439.35,
-        "5": 763.85
+        "1": 154.8,
+        "10": 1786.62,
+        "3": 496.01,
+        "5": 859.53
       },
       "metrics": {
         "mrr@10": {
@@ -1159,10 +1185,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 349.75,
-        "10": 3499.12,
-        "3": 1049.75,
-        "5": 1749.5
+        "1": 349.91,
+        "10": 3500.4,
+        "3": 1050.18,
+        "5": 1750.21
       },
       "metrics": {
         "mrr@10": {
@@ -1291,10 +1317,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 150.0,
-        "10": 1658.5,
-        "3": 474.07,
-        "5": 814.57
+        "1": 167.11,
+        "10": 1848.33,
+        "3": 527.63,
+        "5": 907.09
       },
       "metrics": {
         "mrr@10": {
@@ -1423,10 +1449,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 349.75,
-        "10": 3498.87,
-        "3": 1049.25,
-        "5": 1749.25
+        "1": 349.89,
+        "10": 3500.2,
+        "3": 1049.69,
+        "5": 1749.91
       },
       "metrics": {
         "mrr@10": {
@@ -1555,10 +1581,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 143.75,
-        "10": 1607.28,
-        "3": 452.88,
-        "5": 785.73
+        "1": 162.58,
+        "10": 1802.02,
+        "3": 509.66,
+        "5": 881.19
       },
       "metrics": {
         "mrr@10": {
@@ -1687,10 +1713,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 337.96,
-        "10": 3468.77,
-        "3": 1033.38,
-        "5": 1728.69
+        "1": 338.09,
+        "10": 3469.94,
+        "3": 1033.76,
+        "5": 1729.27
       },
       "metrics": {
         "mrr@10": {
@@ -1819,10 +1845,10 @@
         }
       },
       "mean_retrieved_tokens_at_k": {
-        "1": 61.11,
-        "10": 719.43,
-        "3": 198.72,
-        "5": 344.37
+        "1": 79.58,
+        "10": 904.25,
+        "3": 254.02,
+        "5": 436.41
       },
       "metrics": {
         "mrr@10": {

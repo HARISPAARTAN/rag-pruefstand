@@ -97,6 +97,8 @@ b = "e5-C1"
 a = "hyb+rr-C2"
 b = "hyb+rr-C1"
 
+# `best` is a historical key name (renaming it would change the configuration hash): the configuration is the
+# pre-declared headline configuration (vorab festgelegte Hauptkonfiguration), not the best one by result.
 [headline]
 best = "hyb+rr-C2"
 dense_vs_english = ["e5-C2", "mini-C2"]

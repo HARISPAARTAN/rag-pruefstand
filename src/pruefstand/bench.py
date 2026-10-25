@@ -8,7 +8,7 @@ from pruefstand.chunking import Chunk, chunks_path, load_chunks
 from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
 from pruefstand.errors import PruefstandError
-from pruefstand.io import read_jsonl, write_json, write_jsonl
+from pruefstand.io import read_json, read_jsonl, write_json, write_jsonl
 from pruefstand.metrics import (
     LONG_UNIT_CHARS,
     MIN_OVERLAP_CHARS,
@@ -107,10 +107,11 @@ class ModelHub:
     def score(self, pairs: list[tuple[str, str]]) -> list[float]:
         return self.scorer().score(pairs)
 
-    def token_counts(self, name: str, texts: list[str]) -> list[int] | None:
-        """Token counts incl. special tokens from the tokenizer.json next to the model, as the encoder sees them.
+    def token_counts(self, name: str, texts: list) -> list[int] | None:
+        """Token counts incl. special tokens from the tokenizer.json next to the model, as the model sees them.
 
-        Returns None when the model is not downloaded (offline CI); needs no torch.
+        An item is a text or a (query, passage) pair (cross-encoder input). Returns None when the model is not
+        downloaded (offline CI); needs no torch.
         """
         path = self.cfg.path(self.cfg["models"][name]["dir"]) / "tokenizer.json"
         if not path.is_file():
@@ -179,6 +180,66 @@ def truncation_report(cfg: Config, chunks: list[Chunk], hub: ModelHub) -> dict:
             "mean_visible_share": round(sum(min(c, limit) / c for c in counts if c) / n, 4) if n else 0.0,
         }
     return report
+
+
+RERANKED_RETRIEVERS = ("e5+rr", "hyb+rr")
+RERANK_SCOPE = "(query, chunk) pairs of the reranked top-k of e5+rr and hyb+rr, answerable questions"
+
+
+def reranker_truncation_report(
+    cfg: Config, chunks: list[Chunk], rows: list[dict], questions: list[dict], hub: ModelHub
+) -> dict | None:
+    """How many (query, chunk) pairs the cross-encoder scores exceed its max_length and lose their tail.
+
+    Counts the pairs behind the final top-k of the reranked retrievers, from the hit rows of one chunking.
+    """
+    if not cfg["retrieval"].get("measure_truncation", True):
+        return None
+    reranked = [retriever for retriever in RERANKED_RETRIEVERS if retriever in cfg["retrieval"]["retrievers"]]
+    if not reranked:
+        return None
+    text_by_id = {chunk.chunk_id: chunk.text for chunk in chunks}
+    query_by_qid = {question["qid"]: question["question_de"] for question in questions}
+    pairs = [
+        (query_by_qid[row["qid"]], text_by_id[hit["chunk_id"]])
+        for row in rows
+        if row["answerable"] and row["config_id"].rsplit("-", 1)[0] in reranked
+        for hit in row["ranked"]
+    ]
+    counts = hub.token_counts("reranker", pairs) if pairs else None
+    if counts is None:
+        return None
+    limit = cfg["models"]["reranker"]["max_length"]
+    n = len(counts)
+    truncated = sum(count > limit for count in counts)
+    return {
+        "max_length": limit,
+        "scope": RERANK_SCOPE.replace("top-k", f"top-{cfg['retrieval']['top_k']}"),
+        "n_pairs": n,
+        "n_truncated": truncated,
+        "truncation_rate": round(truncated / n, 4),
+        "mean_tokens": round(sum(counts) / n, 2),
+    }
+
+
+def measure_reranker_truncation(cfg: Config, hub: ModelHub | None = None) -> dict:
+    """Add the reranker truncation to retrieval_meta.json from the committed hit rows (no retrieval run)."""
+    hub = hub or ModelHub(cfg)
+    if not hits_path(cfg).is_file() or not meta_path(cfg).is_file():
+        raise PruefstandError(
+            f"{hits_path(cfg)} or {meta_path(cfg)} not found; run `pruefstand retrieve` first"
+        )
+    questions = load_questions(cfg)
+    hits = read_jsonl(hits_path(cfg))
+    meta = read_json(meta_path(cfg))
+    for chunking in cfg["retrieval"]["chunkings"]:
+        chunks = load_chunks(chunks_path(cfg, chunking))
+        rows = [row for row in hits if row["config_id"].endswith(f"-{chunking}")]
+        meta["truncation"].setdefault(chunking, {})["reranker"] = reranker_truncation_report(
+            cfg, chunks, rows, questions, hub
+        )
+    write_json(meta_path(cfg), meta)
+    return meta["truncation"]
 
 
 def build_indexes(cfg: Config, chunks: list[Chunk], caches: dict, hub: ModelHub) -> dict:
@@ -313,8 +374,10 @@ def run_retrieval(cfg: Config, hub: ModelHub | None = None) -> int:
     truncation: dict = {}
     for chunking in cfg["retrieval"]["chunkings"]:
         chunks = load_chunks(chunks_path(cfg, chunking))
-        rows.extend(retrieve_chunking(cfg, chunking, chunks, questions, unit_texts, caches, hub))
+        chunk_rows = retrieve_chunking(cfg, chunking, chunks, questions, unit_texts, caches, hub)
+        rows.extend(chunk_rows)
         truncation[chunking] = truncation_report(cfg, chunks, hub)
+        truncation[chunking]["reranker"] = reranker_truncation_report(cfg, chunks, chunk_rows, questions, hub)
     write_json(meta_path(cfg), {"truncation": truncation, "relevance": relevance_meta(questions, unit_texts)})
     for cache in caches.values():
         cache.prune_unused()
