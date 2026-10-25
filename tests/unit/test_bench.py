@@ -128,7 +128,7 @@ def test_retrieval_metrics_latency_end_to_end(cfg):
     assert result["corpus"]["n_chunks_C1"] > 0 and result["corpus"]["n_chunks_C2"] > 0
     best = result["variants"]["bm25-C2"]["metrics"]["recall@5"]
     assert best["n"] == 6 and best["mean"] > 0.5
-    assert len(result["comparisons"]) == 16
+    assert len(result["comparisons"]) == 13
     assert result["headline"]["best"]["config_id"] == "hyb+rr-C2"
     assert (cfg.run_dir / "metrics.json").exists()
 
@@ -278,8 +278,9 @@ def test_metrics_record_notes_tokens_and_truncation(cfg):
     for comparison in result["comparisons"]:
         cross = comparison["a"].rsplit("-", 1)[1] != comparison["b"].rsplit("-", 1)[1]
         assert comparison["scope"] == ("cross_chunking" if cross else "within_chunking")
-        assert comparison["valid"] == (not (cross and comparison["metric"] == "ndcg@10"))
-    assert sum(not c["valid"] for c in result["comparisons"]) == 3
+        assert comparison["valid"] is True
+        assert not (cross and comparison["metric"] == "ndcg@10")
+    assert sum(c["scope"] == "cross_chunking" for c in result["comparisons"]) == 3
 
 
 def test_metrics_use_the_configured_bootstrap_size_and_seed(cfg):

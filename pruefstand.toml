@@ -71,6 +71,7 @@ seed = 20261025
 sample = 50
 
 # Paired comparisons fixed before the run; the report never adds comparisons after seeing results.
+# Pairs across chunkings (C1 against C2) are compared on recall@5 only; nDCG@10 is computed within one chunking.
 [[comparison]]
 a = "hyb+rr-C2"
 b = "bm25-C2"

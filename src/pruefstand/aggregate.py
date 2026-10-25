@@ -109,18 +109,20 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
     comparisons = []
     for pair in cfg.data.get("comparison", []):
         a, b = pair["a"], pair["b"]
+        cross = a.rsplit("-", 1)[1] != b.rsplit("-", 1)[1]
         for name in COMPARISON_METRICS:
+            if cross and name in WITHIN_CHUNKING_METRICS:
+                continue  # nDCG is only defined within one chunking: no interval is computed, so none can be quoted
             result = paired_bootstrap(
                 [table[a][q][name] for q in qids], [table[b][q][name] for q in qids], n_boot, seed
             )
-            cross = a.rsplit("-", 1)[1] != b.rsplit("-", 1)[1]
             comparisons.append(
                 {
                     "a": a,
                     "b": b,
                     "metric": name,
                     "scope": "cross_chunking" if cross else "within_chunking",
-                    "valid": not (cross and name in WITHIN_CHUNKING_METRICS),
+                    "valid": True,
                     **result,
                 }
             )
@@ -144,8 +146,8 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
             "text": (
                 "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares "
                 "retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of "
-                "the same chunking; comparisons with valid=false use nDCG across chunkings and are not "
-                "evidence. mean_retrieved_tokens_at_k gives the context size behind each k."
+                "the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking "
+                "nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k."
             ),
         },
         "truncation": read_json(meta_path(cfg))["truncation"] if meta_path(cfg).is_file() else None,
