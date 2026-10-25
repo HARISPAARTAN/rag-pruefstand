@@ -25,6 +25,10 @@ def own_run_only(cfg: Config, stage: str) -> None:
 
 def stage_corpus_build(cfg: Config) -> list:
     own_run_only(cfg, "corpus build")
+    if cfg.uses_committed_units:
+        raise PruefstandError(
+            f"profile {cfg.profile!r} reads the committed units ({cfg['corpus']['units_path']}) and never rebuilds them"
+        )
     corpus = cfg["corpus"]
     return build_units(
         corpus["laws"],
@@ -106,11 +110,10 @@ def stage_report(cfg: Config) -> list[str]:
 
 
 def planned_stages(cfg: Config) -> list[tuple[str, Callable[[Config], object]]]:
-    stages: list[tuple[str, Callable[[Config], object]]] = [
-        ("corpus build", stage_corpus_build),
-        ("chunk", stage_chunk),
-        ("retrieve", stage_retrieve),
-    ]
+    stages: list[tuple[str, Callable[[Config], object]]] = []
+    if not cfg.uses_committed_units:
+        stages.append(("corpus build", stage_corpus_build))
+    stages += [("chunk", stage_chunk), ("retrieve", stage_retrieve)]
     if int(cfg["latency"]["sample"]) > 0:
         stages.append(("latency", stage_latency))
     stages.append(("metrics", stage_metrics))

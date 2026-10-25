@@ -15,13 +15,24 @@ corpus_app = typer.Typer(no_args_is_help=True, help="Fetch and parse the GII law
 
 
 @corpus_app.command("fetch")
-def fetch(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
-    """Download xml.zip per law from gesetze-im-internet.de and write snapshot.json."""
+def fetch(
+    update: Annotated[
+        bool,
+        typer.Option("--update", help="Replace a changed committed snapshot (starts a new corpus version)."),
+    ] = False,
+    profile: ProfileOption = "full",
+    config: ConfigOption = DEFAULT_CONFIG_PATH,
+) -> None:
+    """Download xml.zip per law and write snapshot.json; a changed text is refused without --update."""
     cfg = load(profile, config)
     corpus = cfg["corpus"]
     with guarded():
         snapshot = fetch_laws(
-            corpus["laws"], corpus["base_url"], cfg.path(corpus["zip_dir"]), cfg.path(corpus["snapshot_path"])
+            corpus["laws"],
+            corpus["base_url"],
+            cfg.path(corpus["zip_dir"]),
+            cfg.path(corpus["snapshot_path"]),
+            update=update,
         )
     for slug, entry in snapshot["laws"].items():
         typer.echo(

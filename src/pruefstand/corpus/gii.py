@@ -205,9 +205,17 @@ def parse_law_xml(
     return units, stats
 
 
-def fetch_laws(slugs: list[str], base_url: str, zip_dir: Path, snapshot_path: Path) -> dict:
-    """Download xml.zip per law, record URL, size, SHA-256 and GII build date in snapshot.json."""
+def fetch_laws(
+    slugs: list[str], base_url: str, zip_dir: Path, snapshot_path: Path, update: bool = False
+) -> dict:
+    """Download xml.zip per law, record URL, size, SHA-256 and GII build date in snapshot.json.
+
+    The committed snapshot is the frozen corpus of the published run, and gesetze-im-internet.de serves only the
+    current consolidation. A download whose SHA-256 differs from the snapshot is therefore refused unless update is
+    set; when every download matches, the snapshot (including fetched_at) is left untouched.
+    """
     zip_dir.mkdir(parents=True, exist_ok=True)
+    frozen = read_json(snapshot_path) if Path(snapshot_path).is_file() else None
     snapshot = {
         "source": "gesetze-im-internet.de, Bundesministerium der Justiz; nichtamtliche konsolidierte Fassung",
         "licence_note": "Gesetze und Verordnungen sind nach § 5 Abs. 1 UrhG gemeinfrei",
@@ -224,6 +232,16 @@ def fetch_laws(slugs: list[str], base_url: str, zip_dir: Path, snapshot_path: Pa
                 partial.write_bytes(response.read())
             root = ET.fromstring(read_xml_from_zip(partial))
             abbr = law_metadata(root)["law_abbr"]
+            known = (frozen or {}).get("laws", {}).get(slug)
+            new_sha = sha256_file(partial)
+            if known and not update and known["sha256"] != new_sha:
+                partial.unlink(missing_ok=True)
+                raise PruefstandError(
+                    f"{slug}: gesetze-im-internet.de now serves a different text than the snapshot of "
+                    f"{frozen['fetched_at']} (sha256 {new_sha[:16]}... instead of {known['sha256'][:16]}...). "
+                    "The committed snapshot is frozen because the published numbers belong to it; "
+                    "pass --update only to start a new corpus version."
+                )
             os.replace(partial, target)
         except (OSError, urllib.error.URLError, zipfile.BadZipFile, ET.ParseError, ValueError) as exc:
             partial.unlink(missing_ok=True)
@@ -235,8 +253,18 @@ def fetch_laws(slugs: list[str], base_url: str, zip_dir: Path, snapshot_path: Pa
             "builddate": root.get("builddate", ""),
             "law_abbr": abbr,
         }
+    if frozen and not update and _same_laws(frozen, snapshot):
+        return frozen  # nothing changed: keep the committed snapshot, fetched_at included
     write_json(snapshot_path, snapshot)
     return snapshot
+
+
+def _same_laws(frozen: dict, fresh: dict) -> bool:
+    keys = ("url", "bytes", "sha256", "builddate", "law_abbr")
+    return frozen.get("laws", {}).keys() == fresh["laws"].keys() and all(
+        all(frozen["laws"][slug].get(key) == entry[key] for key in keys)
+        for slug, entry in fresh["laws"].items()
+    )
 
 
 def build_units(

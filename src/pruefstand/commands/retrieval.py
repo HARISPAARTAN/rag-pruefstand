@@ -9,9 +9,11 @@ import typer
 from pruefstand.aggregate import summary_lines
 from pruefstand.bench import measure_reranker_truncation
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, guarded, load
+from pruefstand.config import load_config
 from pruefstand.corpus.gii import load_units
 from pruefstand.pipeline import run_all, stage_latency, stage_metrics, stage_retrieve
 from pruefstand.retrieval.bm25 import BM25Index
+from pruefstand.verify import MAX_REPORTED, compare_runs
 
 models_app = typer.Typer(
     no_args_is_help=True, help="Download the pinned Hugging Face models (needs the models extra)."
@@ -97,6 +99,28 @@ def all_stages(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_C
     typer.echo(f"done: {', '.join(done)}")
 
 
+def verify(
+    against: Annotated[
+        str, typer.Option(help="Run id of the published run; default: the full profile's")
+    ] = "",
+    profile: ProfileOption = "verify",
+    config: ConfigOption = DEFAULT_CONFIG_PATH,
+) -> None:
+    """Compare a reproduction run (profile verify) with the published run: hits by content, metrics by value."""
+    cfg = load(profile, config)
+    published_id = against or load_config(cfg.path(config), "full").run_id
+    published = cfg.path(cfg["paths"]["runs_dir"]) / published_id
+    with guarded():
+        differences = compare_runs(published, cfg.run_dir)
+    if differences:
+        for line in differences[:MAX_REPORTED]:
+            typer.echo(f"  - {line}", err=True)
+        more = len(differences) - MAX_REPORTED
+        typer.echo(f"{len(differences)} difference(s){f' ({more} not shown)' if more > 0 else ''}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"identical: {cfg.run_id} reproduces {published_id} (hits.jsonl.gz and metrics.json)")
+
+
 def register(app: typer.Typer) -> None:
     app.add_typer(models_app, name="models")
     app.command("retrieve")(retrieve)
@@ -105,3 +129,4 @@ def register(app: typer.Typer) -> None:
     app.command("metrics")(metrics)
     app.command("search")(search)
     app.command("all")(all_stages)
+    app.command("verify")(verify)

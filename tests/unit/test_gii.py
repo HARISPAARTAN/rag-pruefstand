@@ -12,7 +12,7 @@ from pruefstand.corpus.gii import (
     unit_id_for,
 )
 from pruefstand.errors import PruefstandError
-from pruefstand.io import sha256_bytes, write_json
+from pruefstand.io import read_json, sha256_bytes, write_json
 
 BASE = "https://www.gesetze-im-internet.de"
 
@@ -112,3 +112,39 @@ def test_build_units_wraps_a_corrupt_zip(tmp_path):
     )
     with pytest.raises(PruefstandError, match="cannot read or parse"):
         build_units(["messbg"], BASE, tmp_path, tmp_path / "snapshot.json", tmp_path / "units.jsonl.gz")
+
+
+def _serve(monkeypatch, data):
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _FakeResponse(data))
+
+
+def test_fetch_keeps_the_committed_snapshot_when_nothing_changed(root, tmp_path, monkeypatch):
+    data = (root / "fixtures" / "ci" / "gii" / "messbg.xml.zip").read_bytes()
+    _serve(monkeypatch, data)
+    snapshot_path = tmp_path / "snapshot.json"
+    first = fetch_laws(["messbg"], BASE, tmp_path, snapshot_path)
+    frozen = {**first, "fetched_at": "2026-10-25"}
+    write_json(snapshot_path, frozen)
+    again = fetch_laws(["messbg"], BASE, tmp_path, snapshot_path)
+    assert again["fetched_at"] == "2026-10-25"
+    assert read_json(snapshot_path) == frozen
+
+
+def test_fetch_refuses_a_changed_text_and_leaves_snapshot_and_zip_alone(root, tmp_path, monkeypatch):
+    data = (root / "fixtures" / "ci" / "gii" / "messbg.xml.zip").read_bytes()
+    _serve(monkeypatch, data)
+    snapshot_path = tmp_path / "snapshot.json"
+    fetch_laws(["messbg"], BASE, tmp_path, snapshot_path)
+    frozen = read_json(snapshot_path)
+    frozen["laws"]["messbg"]["sha256"] = "0" * 64
+    frozen["fetched_at"] = "2026-10-25"
+    write_json(snapshot_path, frozen)
+    zip_before = (tmp_path / "messbg.xml.zip").read_bytes()
+    with pytest.raises(PruefstandError, match="now serves a different text.*--update"):
+        fetch_laws(["messbg"], BASE, tmp_path, snapshot_path)
+    assert read_json(snapshot_path) == frozen
+    assert (tmp_path / "messbg.xml.zip").read_bytes() == zip_before
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["messbg.xml.zip", "snapshot.json"]
+    updated = fetch_laws(["messbg"], BASE, tmp_path, snapshot_path, update=True)
+    assert updated["laws"]["messbg"]["sha256"] == sha256_bytes(data)
+    assert read_json(snapshot_path)["laws"]["messbg"]["sha256"] == sha256_bytes(data)

@@ -274,3 +274,14 @@ paths.run_id = "pilot-2026-10-25"
 paths.source_run_id = "full-2026-10-25"
 generation.max_questions = 3
 generation.variants = ["hyb+rr-C2"]
+
+# Reproduction of the published retrieval run without touching it: `pruefstand all --profile verify` re-chunks the
+# committed units, retrieves and computes the metrics into runs/verify-scratch (git-ignored), then
+# `pruefstand verify` compares the result with the published run. The committed units, the corpus snapshot,
+# runs/full-2026-10-25, reports/ and site/ are not written.
+[profile.verify]
+paths.run_id = "verify-scratch"
+paths.use_committed_units = true
+paths.reports_dir = "runs/verify-scratch/report"
+paths.site_dir = "runs/verify-scratch/site"
+latency.sample = 0

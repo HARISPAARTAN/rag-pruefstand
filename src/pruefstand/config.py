@@ -73,6 +73,11 @@ class Config:
     def reads_foreign_run(self) -> bool:
         return self.source_run_id != self.run_id
 
+    @property
+    def uses_committed_units(self) -> bool:
+        """True for the verify profile: the committed units are the frozen corpus and are never rebuilt."""
+        return bool(self.data["paths"].get("use_committed_units", False))
+
     def llm_mode(self) -> str:
         mode = os.environ.get("PRUEFSTAND_LLM_MODE") or self.data["llm"]["mode"]
         if mode not in LLM_MODES:

@@ -13,6 +13,7 @@ __pycache__/
 
 # Run directories: the CI run is rebuilt by every test run; chunks are rebuilt by `pruefstand chunk`
 runs/ci/
+runs/verify-*/
 runs/*/chunks_*.jsonl.gz
 runs/*/units.jsonl.gz
 
