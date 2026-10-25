@@ -9,7 +9,7 @@ and full provenance. File: `data/questions/k1_v1.jsonl` (one JSON object per lin
 
 ## Status of the human check
 
-**Pending.** The questions were model-generated on 2026-10-26 with Claude Code by the authoring agent `claude-sonnet-5-5` (a Claude model
+**Pending.** The questions were model-generated on 2026-10-25 with Claude Code by the authoring agent `claude-sonnet-5-5` (a Claude model
 acting as the implementing agent of this repository) while it read the law texts. No question has been checked by a
 human yet. A stratified sample of 100 questions is in `review/k1_v1_review.csv`: all 24 unanswerable questions plus 76
 answerable ones, drawn by type in proportion to the type sizes (21 factoid, 17 definition, 17 colloquial, 13 crossref,
