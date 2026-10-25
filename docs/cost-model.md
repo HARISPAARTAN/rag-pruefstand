@@ -54,7 +54,9 @@ set costs nothing here: it was written by the implementing agent, not by API cal
   than 1,000 tokens is recorded as `invalid`, never silently retried.
 - One cap per run: each live stage writes what it spent to `runs/<id>/spend.json`, and the other stages count it.
 - Measured spend is computed from the usage the API returns (input, output, cache read and cache write tokens), stored per
-  answer and judgement (`cost_usd`) and per run (`manifest.json`, `spend_usd`, only for calls billed in that run).
+  answer and judgement (`cost_usd`), per stage in `spend.json` and in the `stage_manifests.json` entry of each live
+  `generate` or `judge` run (`spend_usd`, only for calls billed in that run; `manifest.json` records `spend_usd` for
+  runs made with `all`).
 - Every cassette entry stores the cost at record time, the price table date, a timestamp, the SDK version and the Batch
   id. A replay reports `cost_usd` (recomputed with the current `costs.toml`) and `recorded_cost_usd` (as stored) apart,
   so a later price edit cannot silently rewrite history.
@@ -72,3 +74,12 @@ reported with their error and left out of the cassette.
 
 v0.1.0 made no paid API call: USD 0. The first actual spend will be recorded here after the live run (v0.2.0), next to
 the projection, so the estimate can be checked.
+
+## Pilot before the full judge
+
+`--profile pilot` runs three questions (the first two answerable ones by question id, both EEG, and the first unanswerable
+one) with the variant hyb+rr-C2: 3 answers and 6 judge calls with the models and settings of the full run, sharing the
+full run's cassette file. At the projected token counts that is a few US cents. The pilot answers three open questions the
+tests cannot: how many judge verdicts end in `max_tokens` (the 1,000-token limit includes adaptive thinking), whether the
+Batch API returns the shapes the code expects, and what a call really costs. Its spend is kept in
+`runs/pilot-2026-10-25/spend.json`, separate from the cap of the full run.
