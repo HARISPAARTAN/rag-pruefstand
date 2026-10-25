@@ -9,7 +9,7 @@ import pytest
 from pruefstand.corpus.gii import load_units
 from pruefstand.io import read_jsonl
 from pruefstand.prompts import load_prompt
-from pruefstand.questions.review import TYPE_SHARE
+from pruefstand.questions.review import CELL_LIMIT, review_quotas
 from pruefstand.questions.schema import TARGETS, check_distribution, validate_authored
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,8 +59,17 @@ def test_review_sheet_lists_100_questions_with_the_set_type_shares(questions):
         rows = list(csv.DictReader(handle))
     by_qid = {q["qid"]: q for q in questions}
     assert len(rows) == 100 and all(row["qid"] in by_qid for row in rows)
-    assert Counter(row["type"] for row in rows) == TYPE_SHARE
+    assert Counter(row["type"] for row in rows) == {
+        k: v for k, v in review_quotas(questions, 100).items() if v
+    }
+    assert (
+        Counter(row["type"] for row in rows)["unanswerable"] == 24
+    )  # every unanswerable question is reviewed
     assert all(row["verdict"] == "" for row in rows)
+    assert all(len(row["gold_unit_text_de"]) <= CELL_LIMIT * 2 for row in rows)  # fits a spreadsheet cell
+    for row in rows:  # the sheet shows the committed question text, not a stale copy
+        assert row["question_de"] == by_qid[row["qid"]]["question_de"]
+        assert row["gold_answer_de"] == by_qid[row["qid"]]["gold_answer_de"]
 
 
 def test_every_long_gold_unit_has_a_located_passage_for_the_passage_based_relevance(questions, units_by_id):

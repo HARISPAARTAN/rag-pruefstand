@@ -4,7 +4,13 @@ import pytest
 
 from pruefstand.corpus.gii import parse_law_xml, read_xml_from_zip
 from pruefstand.questions.filters import copy_ratio, jaccard, lexical_overlap, numbers_supported, run_filters
-from pruefstand.questions.review import export_review, import_review, sample_for_review
+from pruefstand.questions.review import (
+    export_review,
+    import_review,
+    review_quotas,
+    sample_for_review,
+    unit_context,
+)
 from pruefstand.questions.schema import ABSTAIN_ANSWER, check_distribution, validate_authored
 
 
@@ -62,6 +68,62 @@ def test_unanswerable_rules(units_by_id):
 def test_crossref_needs_two_units(units_by_id):
     errors = validate_authored(record(type="crossref"), units_by_id)
     assert errors == ["crossref questions need at least two different gold units"]
+
+
+def test_crossref_units_must_come_from_different_sections(units_by_id):
+    same_section = record(
+        type="crossref",
+        gold_unit_ids=["messbg:§14:abs3", "messbg:§14:abs1"],
+        gold_passage_de="Für den Wechsel des Messstellenbetreibers darf kein gesondertes Entgelt erhoben werden.",
+    )
+    errors = validate_authored(same_section, units_by_id)
+    assert any("at least two different sections" in e for e in errors)
+    other = next(uid for uid in units_by_id if uid.startswith("messbg:§5:") and uid != "messbg:§5:abs0")
+    passage = (
+        "Für den Wechsel des Messstellenbetreibers darf kein gesondertes Entgelt erhoben werden. … "
+        + units_by_id[other].text.split(".")[0].strip()[:80]
+    )
+    ok = record(type="crossref", gold_unit_ids=["messbg:§14:abs3", other], gold_passage_de=passage)
+    assert validate_authored(ok, units_by_id) == []
+
+
+def test_every_gold_unit_needs_an_excerpt_and_excerpts_must_not_be_fragments(units_by_id):
+    other = next(uid for uid in units_by_id if uid.startswith("messbg:§5:"))
+    errors = validate_authored(record(type="crossref", gold_unit_ids=["messbg:§14:abs3", other]), units_by_id)
+    assert errors == [f"gold unit {other} contains no excerpt of gold_passage_de"]
+    errors = validate_authored(record(gold_passage_de="kein gesondertes"), units_by_id)
+    assert any("shorter than" in e for e in errors)
+
+
+def test_review_quotas_review_every_unanswerable_question_and_scale_the_rest():
+    questions = (
+        [{"qid": f"f{i}", "type": "factoid"} for i in range(60)]
+        + [{"qid": f"d{i}", "type": "definition"} for i in range(48)]
+        + [{"qid": f"c{i}", "type": "colloquial"} for i in range(48)]
+        + [{"qid": f"x{i}", "type": "crossref"} for i in range(36)]
+        + [{"qid": f"n{i}", "type": "number"} for i in range(24)]
+        + [{"qid": f"u{i}", "type": "unanswerable"} for i in range(24)]
+    )
+    quotas = review_quotas(questions, 100)
+    assert quotas == {
+        "factoid": 21,
+        "definition": 17,
+        "colloquial": 17,
+        "crossref": 13,
+        "number": 8,
+        "unanswerable": 24,
+    }
+    assert sum(quotas.values()) == 100
+    chosen = sample_for_review(questions, 100, 7)
+    assert len(chosen) == 100 and sum(q["type"] == "unanswerable" for q in chosen) == 24
+
+
+def test_long_units_are_cut_around_the_gold_excerpt_for_the_review_sheet():
+    text = "Alpha " * 4000 + "Die gesuchte Regel gilt immer. " + "Omega " * 4000
+    short = unit_context("kurzer Text", "kurzer Text")
+    assert short == "kurzer Text"
+    cut = unit_context(text, "Die gesuchte Regel gilt immer.")
+    assert "Die gesuchte Regel gilt immer." in cut and len(cut) < 4000 and cut.startswith("[…]")
 
 
 def test_check_distribution_reports_every_gap():

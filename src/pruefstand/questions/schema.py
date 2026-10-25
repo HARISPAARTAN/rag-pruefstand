@@ -11,6 +11,7 @@ from pruefstand.corpus.gii import Unit
 TYPES = ("factoid", "definition", "colloquial", "crossref", "number", "unanswerable")
 ABSTAIN_ANSWER = "Die Frage lässt sich mit den vorliegenden Quellen nicht beantworten."
 PASSAGE_SEPARATOR = " … "
+MIN_EXCERPT_CHARS = 20
 AUTHORED_FIELDS = (
     "type",
     "question_de",
@@ -56,6 +57,11 @@ def normalise_ws(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def section_of(unit_id: str) -> str:
+    """The norm a unit belongs to, e.g. 'enwg_2005:§14a' for 'enwg_2005:§14a:abs3'."""
+    return unit_id.rsplit(":", 1)[0]
+
+
 def law_of(record: Mapping) -> str:
     ids = record["gold_unit_ids"] or record["source_unit_ids"]
     return ids[0].split(":", 1)[0]
@@ -91,15 +97,29 @@ def validate_authored(record: Mapping, units_by_id: Mapping[str, Unit]) -> list[
     if not record["gold_unit_ids"]:
         errors.append("answerable questions need gold_unit_ids")
         return errors
-    if kind == "crossref" and len(set(record["gold_unit_ids"])) < 2:
-        errors.append("crossref questions need at least two different gold units")
-    gold_texts = [normalise_ws(units_by_id[unit_id].text) for unit_id in record["gold_unit_ids"]]
+    if kind == "crossref":
+        if len(set(record["gold_unit_ids"])) < 2:
+            errors.append("crossref questions need at least two different gold units")
+        elif len({section_of(unit_id) for unit_id in record["gold_unit_ids"]}) < 2:
+            errors.append("crossref gold units must come from at least two different sections or laws")
+    gold_texts = {unit_id: normalise_ws(units_by_id[unit_id].text) for unit_id in record["gold_unit_ids"]}
+    found_in: set[str] = set()
     for part in normalise_ws(record["gold_passage_de"]).split(PASSAGE_SEPARATOR.strip()):
         excerpt = part.strip()
         if not excerpt:
             errors.append("gold_passage_de has an empty excerpt")
-        elif not any(excerpt in text for text in gold_texts):
+            continue
+        holders = [unit_id for unit_id, text in gold_texts.items() if excerpt in text]
+        if not holders:
             errors.append(f"gold passage excerpt not found verbatim in the gold units: {excerpt[:60]!r}")
+        elif len(excerpt) < MIN_EXCERPT_CHARS:
+            errors.append(f"gold passage excerpt shorter than {MIN_EXCERPT_CHARS} characters: {excerpt!r}")
+        found_in.update(holders)
+    errors.extend(
+        f"gold unit {unit_id} contains no excerpt of gold_passage_de"
+        for unit_id in record["gold_unit_ids"]
+        if unit_id not in found_in and not errors
+    )
     return errors
 
 
