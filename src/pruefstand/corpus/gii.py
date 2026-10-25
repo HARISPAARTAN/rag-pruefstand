@@ -6,6 +6,7 @@ in the README, the site and every unit's deep link.
 
 from __future__ import annotations
 
+import os
 import re
 import urllib.error
 import urllib.request
@@ -217,18 +218,22 @@ def fetch_laws(slugs: list[str], base_url: str, zip_dir: Path, snapshot_path: Pa
         url = zip_url(base_url, slug)
         target = zip_dir / f"{slug}.xml.zip"
         request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        partial = target.with_name(target.name + ".part")
         try:
             with urllib.request.urlopen(request, timeout=120) as response:
-                target.write_bytes(response.read())
-            root = ET.fromstring(read_xml_from_zip(target))
+                partial.write_bytes(response.read())
+            root = ET.fromstring(read_xml_from_zip(partial))
+            abbr = law_metadata(root)["law_abbr"]
+            os.replace(partial, target)
         except (OSError, urllib.error.URLError, zipfile.BadZipFile, ET.ParseError, ValueError) as exc:
+            partial.unlink(missing_ok=True)
             raise PruefstandError(f"{url}: download or unpacking failed: {exc}") from exc
         snapshot["laws"][slug] = {
             "url": url,
             "bytes": target.stat().st_size,
             "sha256": sha256_file(target),
             "builddate": root.get("builddate", ""),
-            "law_abbr": law_metadata(root)["law_abbr"],
+            "law_abbr": abbr,
         }
     write_json(snapshot_path, snapshot)
     return snapshot
@@ -253,7 +258,11 @@ def build_units(
         actual = sha256_file(zip_path)
         if actual != entry["sha256"]:
             raise PruefstandError(f"{zip_path}: SHA-256 {actual} does not match snapshot {entry['sha256']}")
-        units, stats = parse_law_xml(read_xml_from_zip(zip_path), slug, base_url, snapshot["fetched_at"])
+        try:
+            xml_bytes = read_xml_from_zip(zip_path)
+            units, stats = parse_law_xml(xml_bytes, slug, base_url, snapshot["fetched_at"])
+        except (zipfile.BadZipFile, ET.ParseError, ValueError) as exc:
+            raise PruefstandError(f"{zip_path}: cannot read or parse: {exc}") from exc
         all_units.extend(units)
         all_stats.append(stats)
     write_jsonl(units_path, (asdict(unit) for unit in all_units))

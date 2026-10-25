@@ -1,4 +1,18 @@
-from pruefstand.corpus.gii import norm_url, parse_law_xml, read_xml_from_zip, unit_id_for
+import io
+import urllib.request
+
+import pytest
+
+from pruefstand.corpus.gii import (
+    build_units,
+    fetch_laws,
+    norm_url,
+    parse_law_xml,
+    read_xml_from_zip,
+    unit_id_for,
+)
+from pruefstand.errors import PruefstandError
+from pruefstand.io import sha256_bytes, write_json
 
 BASE = "https://www.gesetze-im-internet.de"
 
@@ -60,3 +74,41 @@ def test_msbg_fixture_unit_count(root):
     assert stats.n_units == len(units) == 220
     assert units[0].law_abbr == "MsbG"
     assert len({u.unit_id for u in units}) == len(units)
+
+
+class _FakeResponse(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_fetch_laws_wraps_a_corrupt_zip_and_keeps_the_old_file(tmp_path, monkeypatch):
+    old = tmp_path / "messbg.xml.zip"
+    old.write_bytes(b"previous good download")
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _FakeResponse(b"not a zip"))
+    with pytest.raises(PruefstandError, match="download or unpacking failed"):
+        fetch_laws(["messbg"], BASE, tmp_path, tmp_path / "snapshot.json")
+    assert old.read_bytes() == b"previous good download"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["messbg.xml.zip"]
+
+
+def test_fetch_laws_replaces_the_zip_atomically(root, tmp_path, monkeypatch):
+    data = (root / "fixtures" / "ci" / "gii" / "messbg.xml.zip").read_bytes()
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _FakeResponse(data))
+    snapshot = fetch_laws(["messbg"], BASE, tmp_path, tmp_path / "snapshot.json")
+    assert (tmp_path / "messbg.xml.zip").read_bytes() == data
+    assert snapshot["laws"]["messbg"]["bytes"] == len(data)
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["messbg.xml.zip", "snapshot.json"]
+
+
+def test_build_units_wraps_a_corrupt_zip(tmp_path):
+    broken = b"not a zip"
+    (tmp_path / "messbg.xml.zip").write_bytes(broken)
+    write_json(
+        tmp_path / "snapshot.json",
+        {"fetched_at": "2026-10-25", "laws": {"messbg": {"sha256": sha256_bytes(broken)}}},
+    )
+    with pytest.raises(PruefstandError, match="cannot read or parse"):
+        build_units(["messbg"], BASE, tmp_path, tmp_path / "snapshot.json", tmp_path / "units.jsonl.gz")

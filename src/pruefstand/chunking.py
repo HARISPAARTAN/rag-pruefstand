@@ -24,8 +24,57 @@ from pruefstand.errors import PruefstandError
 from pruefstand.io import read_jsonl, sha256_bytes, write_jsonl
 
 TOKENIZER_SHA256 = "62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
+# A period does not end a sentence after a bare number of one to three digits (ordinal or list marker such as
+# "11." or "31. Dezember"), a single letter ("z. B.", "d. h.", "i. V. m.", "u. a."), a Roman numeral of up to
+# four letters, or one of these common German abbreviations.
+ABBREVIATIONS = (
+    "Abs",
+    "Nr",
+    "Nrn",
+    "Satz",
+    "S",
+    "Art",
+    "ggf",
+    "bzw",
+    "vgl",
+    "Buchst",
+    "etc",
+    "usw",
+    "ca",
+    "bspw",
+    "inkl",
+    "evtl",
+    "insb",
+    "sog",
+    "ff",
+    "Hs",
+    "Alt",
+    "Ziff",
+    "Anl",
+    "Abschn",
+    "Mio",
+    "Mrd",
+    "ABl",
+    "BGBl",
+)
+# Exception to the number guard: after a legal reference word ("Absatz 2.", "§ 14.") a number is a reference
+# and the period can end the sentence.
+REFERENCE_WORDS = ("Absatz", "Satz", "Nummer", "Nr.", "Abs.", "§", "§§", "Buchstabe", "Anlage", "Teil")
+_BARE_NUMBER = "".join(rf"(?<!\b\d{{{n}}}\.)" for n in (1, 2, 3))
+_AFTER_REFERENCE = "|".join(
+    rf"(?<={re.escape(word)} \d{{{n}}}\.)" for word in REFERENCE_WORDS for n in (1, 2, 3)
+)
+_ORDINAL_GUARDS = f"(?:{_BARE_NUMBER}|{_AFTER_REFERENCE})"
+_LETTER_GUARD = r"(?<!\b[A-Za-zÄÖÜäöüß]\.)"
+_ROMAN_GUARDS = "".join(rf"(?<!\b[IVXLCDM]{{{n}}}\.)" for n in (2, 3, 4))
+_ABBREVIATION_GUARDS = "".join(rf"(?<!\b{abbr}\.)" for abbr in ABBREVIATIONS)
+# A sentence end is [.;:!?] plus whitespace, followed by an uppercase letter, an opening quote or a paragraph sign.
 SENTENCE_BOUNDARY = re.compile(
-    r"(?<!\bAbs\.)(?<!\bNr\.)(?<!\bArt\.)(?<!\bS\.)(?<!\bz\.)(?<!\bvgl\.)(?<!\bBuchst\.)(?<=[.;:!?])\s+"
+    _ORDINAL_GUARDS
+    + _LETTER_GUARD
+    + _ROMAN_GUARDS
+    + _ABBREVIATION_GUARDS
+    + r"(?<=[.;:!?])\s+(?=[A-ZÄÖÜ§\"„“»‚])"
 )
 CLAUSE_BOUNDARY = re.compile(r"(?<=,)\s+")
 
@@ -62,7 +111,13 @@ def fetch_tokenizer(model_id: str, revision: str, out_path: Path) -> None:
 def load_tokenizer(path: str) -> Tokenizer:
     if not Path(path).is_file():
         raise PruefstandError(f"{path} not found; run `pruefstand corpus fetch-tokenizer` first")
-    data = lzma.decompress(Path(path).read_bytes())
+    try:
+        data = lzma.decompress(Path(path).read_bytes())
+    except (OSError, lzma.LZMAError) as exc:
+        raise PruefstandError(f"{path}: cannot read tokenizer: {exc}") from exc
+    digest = sha256_bytes(data)
+    if digest != TOKENIZER_SHA256:
+        raise PruefstandError(f"{path}: tokenizer SHA-256 {digest} differs from pinned {TOKENIZER_SHA256}")
     return Tokenizer.from_str(data.decode("utf-8"))
 
 
