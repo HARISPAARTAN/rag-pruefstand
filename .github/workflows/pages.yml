@@ -33,6 +33,8 @@ jobs:
       - run: uv sync --locked
       - run: uv run pruefstand report
       - run: git diff --stat
+      - name: Committed report, site and README blocks must be current
+        run: git diff --exit-code -- reports site README.md README.en.md
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
