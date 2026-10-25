@@ -167,3 +167,59 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
     }
     write_json(cfg.run_dir / "metrics.json", result)
     return result
+
+
+def _truncation_note(result: dict, config_id: str) -> str:
+    """Suffix for the MiniLM rows: how much of the chunk text the model never sees."""
+    retriever, chunking = config_id.rsplit("-", 1)
+    if retriever != "mini" or not result.get("truncation"):
+        return ""
+    mini = (result["truncation"].get(chunking) or {}).get("mini")
+    if not mini:
+        return ""
+    return (
+        f"  (MiniLM truncated {mini['n_truncated']}/{mini['n_chunks']} {chunking} chunks"
+        f" = {mini['truncation_rate'] * 100:.1f}%)"
+    )
+
+
+def summary_lines(result: dict) -> list[str]:
+    """Console summary: recall@5 per variant, the dense-versus-English comparison and the truncation table.
+
+    The English-only control reads only part of many chunks, so the truncation table is printed directly after
+    the comparison it qualifies, and the MiniLM rows carry their own truncation note.
+    """
+    lines = []
+    for config_id, variant in result["variants"].items():
+        r5 = variant["metrics"]["recall@5"]
+        lines.append(
+            f"{config_id:12s} recall@5 {r5['mean']:.3f} [{r5['lo']:.3f}, {r5['hi']:.3f}]"
+            f"{_truncation_note(result, config_id)}"
+        )
+    versus = result["headline"]["dense_vs_english"]
+    lines.append("")
+    lines.append(
+        f"dense vs English ({versus['a']} vs {versus['b']}): recall@5 diff {versus['diff']:+.3f} "
+        f"[{versus['lo']:+.3f}, {versus['hi']:+.3f}] -> {versus['verdict']}"
+    )
+    truncation = result.get("truncation")
+    if not truncation or not any(
+        row for per_model in truncation.values() for row in (per_model or {}).values()
+    ):
+        lines.append("truncation: not measured (offline profile without model files)")
+        return lines
+    lines.append("truncation (chunks whose text exceeds the model's max_seq_length):")
+    lines.append(
+        f"  {'model':5s} {'chunking':8s} {'max_seq':>7s} {'truncated':>12s} {'rate':>7s} {'visible':>8s}"
+    )
+    for model in ("e5", "mini"):
+        for chunking, per_model in truncation.items():
+            row = (per_model or {}).get(model)
+            if not row:
+                continue
+            lines.append(
+                f"  {model:5s} {chunking:8s} {row['max_seq_length']:7d} "
+                f"{row['n_truncated']:>5d}/{row['n_chunks']:<6d} {row['truncation_rate'] * 100:6.1f}% "
+                f"{row['mean_visible_share'] * 100:7.1f}%"
+            )
+    return lines

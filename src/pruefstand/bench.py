@@ -161,6 +161,9 @@ def truncation_report(cfg: Config, chunks: list[Chunk], hub: ModelHub) -> dict:
     report: dict = {}
     for name in ("e5", "mini"):
         model = cfg["models"][name]
+        if not cfg["retrieval"].get("measure_truncation", True):
+            report[name] = None  # offline CI: the golden file must not depend on local model files
+            continue
         counts = hub.token_counts(name, [model["passage_prefix"] + chunk.text for chunk in chunks])
         if counts is None:
             report[name] = None

@@ -1,0 +1,1835 @@
+{
+  "comparisons": [
+    {
+      "a": "hyb+rr-C2",
+      "b": "bm25-C2",
+      "diff": 0.277778,
+      "hi": 0.462963,
+      "lo": 0.111111,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    {
+      "a": "hyb+rr-C2",
+      "b": "bm25-C2",
+      "diff": 0.24842,
+      "hi": 0.410299,
+      "lo": 0.109762,
+      "metric": "ndcg@10",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    {
+      "a": "e5-C2",
+      "b": "mini-C2",
+      "diff": 0.462963,
+      "hi": 0.648148,
+      "lo": 0.277778,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    {
+      "a": "e5-C2",
+      "b": "mini-C2",
+      "diff": 0.414796,
+      "hi": 0.56534,
+      "lo": 0.263192,
+      "metric": "ndcg@10",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    {
+      "a": "hyb-C2",
+      "b": "e5-C2",
+      "diff": -0.074074,
+      "hi": 0.074074,
+      "lo": -0.222222,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "hyb-C2",
+      "b": "e5-C2",
+      "diff": -0.079233,
+      "hi": 0.01989,
+      "lo": -0.195679,
+      "metric": "ndcg@10",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "e5+rr-C2",
+      "b": "e5-C2",
+      "diff": 0.148148,
+      "hi": 0.314815,
+      "lo": -0.018519,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "e5+rr-C2",
+      "b": "e5-C2",
+      "diff": 0.104078,
+      "hi": 0.254861,
+      "lo": -0.042749,
+      "metric": "ndcg@10",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "hyb+rr-C2",
+      "b": "hyb-C2",
+      "diff": 0.148148,
+      "hi": 0.314815,
+      "lo": 0.0,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "hyb+rr-C2",
+      "b": "hyb-C2",
+      "diff": 0.137466,
+      "hi": 0.270032,
+      "lo": 0.033123,
+      "metric": "ndcg@10",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    {
+      "a": "bm25-C2",
+      "b": "bm25-C1",
+      "diff": -0.037037,
+      "hi": 0.0,
+      "lo": -0.111111,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "cross_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "e5-C2",
+      "b": "e5-C1",
+      "diff": -0.12963,
+      "hi": 0.037037,
+      "lo": -0.314815,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "cross_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    },
+    {
+      "a": "hyb+rr-C2",
+      "b": "hyb+rr-C1",
+      "diff": -0.055556,
+      "hi": 0.12963,
+      "lo": -0.240741,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "cross_chunking",
+      "valid": true,
+      "verdict": "no_measurable_difference"
+    }
+  ],
+  "corpus": {
+    "mean_tokens_C1": 349.75,
+    "mean_tokens_C2": 134.24,
+    "n_chunks_C1": 110,
+    "n_chunks_C2": 246,
+    "n_units": 220,
+    "units_per_law": {
+      "messbg": 220
+    }
+  },
+  "headline": {
+    "best": {
+      "config_id": "hyb+rr-C2",
+      "hi": 0.925926,
+      "lo": 0.62963,
+      "mean": 0.777778,
+      "n": 27
+    },
+    "dense_vs_english": {
+      "a": "e5-C2",
+      "b": "mini-C2",
+      "diff": 0.462963,
+      "hi": 0.648148,
+      "lo": 0.277778,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    },
+    "stack_vs_lexical": {
+      "a": "hyb+rr-C2",
+      "b": "bm25-C2",
+      "diff": 0.277778,
+      "hi": 0.462963,
+      "lo": 0.111111,
+      "metric": "recall@5",
+      "n": 27,
+      "scope": "within_chunking",
+      "valid": true,
+      "verdict": "better"
+    }
+  },
+  "metric_notes": {
+    "cross_chunking_metrics": [
+      "recall@1",
+      "recall@3",
+      "recall@5",
+      "recall@10",
+      "mrr@10"
+    ],
+    "text": "recall@k and MRR@10 are the cross-chunking comparison metrics (C1 against C2). nDCG@10 compares retrievers within one chunking: gain = share of gold units newly covered, ideal = greedy cover of the same chunking; cross-chunking pairs are therefore compared on recall@5 only and no cross-chunking nDCG interval exists. mean_retrieved_tokens_at_k gives the context size behind each k.",
+    "within_chunking_metrics": [
+      "ndcg@10"
+    ]
+  },
+  "n_answerable": 27,
+  "n_bootstrap": 2000,
+  "n_checked": 0,
+  "n_questions": 30,
+  "question_set": "k1_v1",
+  "question_types": {
+    "colloquial": 6,
+    "crossref": 4,
+    "definition": 6,
+    "factoid": 8,
+    "number": 3,
+    "unanswerable": 3
+  },
+  "relevance": {
+    "long_unit_chars": 2000,
+    "min_overlap_chars": 200,
+    "min_overlap_share": 0.5,
+    "n_passage_based_gold_units": 8,
+    "n_passage_based_questions": 8,
+    "rule": "Gold units of at most 2000 characters: a chunk is relevant when it covers at least min(200 characters, 50% of the unit). Longer gold units: a chunk is relevant only when it overlaps an excerpt of the gold passage (located in the unit text) by at least min(200 characters, 50% of the excerpt)."
+  },
+  "run_id": "ci",
+  "seed": 20261025,
+  "truncation": {
+    "C1": {
+      "e5": null,
+      "mini": null
+    },
+    "C2": {
+      "e5": null,
+      "mini": null
+    }
+  },
+  "variants": {
+    "bm25-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.285714,
+            "mean": 0.642857,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.25,
+            "mean": 0.625,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.815465,
+            "mean": 0.907732,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.63093,
+            "mean": 0.876977,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3420.15,
+        "3": 1050.0,
+        "5": 1736.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.652263,
+          "lo": 0.304424,
+          "mean": 0.485597,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.669549,
+          "lo": 0.319667,
+          "mean": 0.498675,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.537037,
+          "lo": 0.203704,
+          "mean": 0.37037,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.722222,
+          "lo": 0.37037,
+          "mean": 0.555556,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.722222,
+          "lo": 0.351852,
+          "mean": 0.537037,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.722222,
+          "lo": 0.351852,
+          "mean": 0.537037,
+          "n": 27
+        }
+      }
+    },
+    "bm25-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.150515,
+            "lo": 0.0,
+            "mean": 0.050172,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.885033,
+            "lo": 0.365873,
+            "mean": 0.646899,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.25,
+            "mean": 0.625,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.75,
+            "mean": 0.875,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 142.52,
+        "10": 1527.41,
+        "3": 448.48,
+        "5": 750.7
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.651411,
+          "lo": 0.296282,
+          "mean": 0.478542,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.64207,
+          "lo": 0.306675,
+          "mean": 0.477356,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.555556,
+          "lo": 0.222222,
+          "mean": 0.388889,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.740741,
+          "lo": 0.37037,
+          "mean": 0.555556,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.666667,
+          "lo": 0.296296,
+          "mean": 0.481481,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.685185,
+          "lo": 0.296296,
+          "mean": 0.5,
+          "n": 27
+        }
+      }
+    },
+    "e5+rr-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.833333,
+            "lo": 0.105155,
+            "mean": 0.438488,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.833333,
+            "lo": 0.166667,
+            "mean": 0.5,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.91273,
+            "lo": 0.524694,
+            "mean": 0.703199,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.625,
+            "mean": 0.875,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.815465,
+            "mean": 0.938488,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.8125,
+            "mean": 0.9375,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3500.0,
+        "3": 1050.0,
+        "5": 1750.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.888966,
+          "lo": 0.623457,
+          "mean": 0.762346,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.918269,
+          "lo": 0.669178,
+          "mean": 0.799061,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.814815,
+          "lo": 0.462963,
+          "mean": 0.648148,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 1.0,
+          "lo": 0.740741,
+          "mean": 0.888889,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.962963,
+          "lo": 0.685185,
+          "mean": 0.833333,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.981481,
+          "lo": 0.740741,
+          "mean": 0.87037,
+          "n": 27
+        }
+      }
+    },
+    "e5+rr-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.605155,
+            "lo": 0.0,
+            "mean": 0.271822,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.666667,
+            "lo": 0.0,
+            "mean": 0.333333,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.898468,
+            "lo": 0.637486,
+            "mean": 0.767977,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.75,
+            "mean": 0.916667,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.861599,
+            "mean": 0.953866,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 158.37,
+        "10": 1506.52,
+        "3": 429.67,
+        "5": 731.15
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.888889,
+          "lo": 0.604938,
+          "mean": 0.753086,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.902371,
+          "lo": 0.633675,
+          "mean": 0.771621,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.796296,
+          "lo": 0.444444,
+          "mean": 0.62963,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.962963,
+          "lo": 0.703704,
+          "mean": 0.851852,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.925926,
+          "lo": 0.648148,
+          "mean": 0.796296,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.962963,
+          "lo": 0.703704,
+          "mean": 0.851852,
+          "n": 27
+        }
+      }
+    },
+    "e5-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.819999,
+            "lo": 0.249687,
+            "mean": 0.534843,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.833333,
+            "lo": 0.166667,
+            "mean": 0.5,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.919721,
+            "lo": 0.574516,
+            "mean": 0.747118,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.625,
+            "mean": 0.875,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.876977,
+            "lo": 0.432599,
+            "mean": 0.643773,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.833333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.674099,
+            "mean": 0.828866,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.63093,
+            "mean": 0.753953,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3500.0,
+        "3": 1050.0,
+        "5": 1750.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.766677,
+          "lo": 0.488673,
+          "mean": 0.62572,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.813665,
+          "lo": 0.589165,
+          "mean": 0.701961,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.592593,
+          "lo": 0.222222,
+          "mean": 0.407407,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 1.0,
+          "lo": 0.888889,
+          "mean": 0.962963,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.925926,
+          "lo": 0.62963,
+          "mean": 0.777778,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.962963,
+          "lo": 0.685185,
+          "mean": 0.833333,
+          "n": 27
+        }
+      }
+    },
+    "e5-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.75,
+            "lo": 0.083333,
+            "mean": 0.416667,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.833333,
+            "lo": 0.166667,
+            "mean": 0.5,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.766146,
+            "lo": 0.633217,
+            "mean": 0.697597,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.75,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.465814,
+            "lo": 0.111945,
+            "mean": 0.28888,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.666667,
+            "lo": 0.0,
+            "mean": 0.333333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 127.19,
+        "10": 1357.11,
+        "3": 383.3,
+        "5": 650.52
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.796296,
+          "lo": 0.467593,
+          "mean": 0.643519,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.80301,
+          "lo": 0.515599,
+          "mean": 0.667543,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.703704,
+          "lo": 0.333333,
+          "mean": 0.518519,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.925926,
+          "lo": 0.648148,
+          "mean": 0.796296,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.833333,
+          "lo": 0.481481,
+          "mean": 0.666667,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.851852,
+          "lo": 0.518519,
+          "mean": 0.703704,
+          "n": 27
+        }
+      }
+    },
+    "hyb+rr-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.688488,
+            "lo": 0.083333,
+            "mean": 0.355155,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.833333,
+            "lo": 0.166667,
+            "mean": 0.5,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.906013,
+            "lo": 0.509839,
+            "mean": 0.69153,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.625,
+            "mean": 0.875,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.438488,
+            "mean": 0.771822,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.833333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.8125,
+            "mean": 0.9375,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3498.96,
+        "3": 1050.0,
+        "5": 1750.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.842593,
+          "lo": 0.552392,
+          "mean": 0.700617,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.873061,
+          "lo": 0.600389,
+          "mean": 0.741777,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.759259,
+          "lo": 0.388889,
+          "mean": 0.574074,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.962963,
+          "lo": 0.703704,
+          "mean": 0.851852,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.925926,
+          "lo": 0.62963,
+          "mean": 0.796296,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.962963,
+          "lo": 0.685185,
+          "mean": 0.833333,
+          "n": 27
+        }
+      }
+    },
+    "hyb+rr-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.548177,
+            "lo": 0.0,
+            "mean": 0.214844,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.885033,
+            "lo": 0.637486,
+            "mean": 0.761259,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.438488,
+            "mean": 0.771822,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.833333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.861599,
+            "mean": 0.953866,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 150.22,
+        "10": 1606.96,
+        "3": 451.0,
+        "5": 747.33
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.855556,
+          "lo": 0.555556,
+          "mean": 0.707407,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.867074,
+          "lo": 0.572706,
+          "mean": 0.725776,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.759722,
+          "lo": 0.407407,
+          "mean": 0.592593,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.962963,
+          "lo": 0.666667,
+          "mean": 0.814815,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.87037,
+          "lo": 0.555556,
+          "mean": 0.722222,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.925926,
+          "lo": 0.62963,
+          "mean": 0.777778,
+          "n": 27
+        }
+      }
+    },
+    "hyb-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.666667,
+            "lo": 0.064475,
+            "mean": 0.336297,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.833333,
+            "lo": 0.166667,
+            "mean": 0.5,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.938608,
+            "lo": 0.562052,
+            "mean": 0.75033,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.75,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.349602,
+            "lo": 0.105727,
+            "mean": 0.229571,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.861599,
+            "mean": 0.953866,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 0.63093,
+            "mean": 0.753953,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3498.96,
+        "3": 1050.0,
+        "5": 1750.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.712407,
+          "lo": 0.397862,
+          "mean": 0.561258,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.742074,
+          "lo": 0.458464,
+          "mean": 0.603308,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.555556,
+          "lo": 0.203704,
+          "mean": 0.388889,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.944444,
+          "lo": 0.648148,
+          "mean": 0.796296,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.740741,
+          "lo": 0.388889,
+          "mean": 0.574074,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.814815,
+          "lo": 0.481481,
+          "mean": 0.666667,
+          "n": 27
+        }
+      }
+    },
+    "hyb-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.274706,
+            "lo": 0.0,
+            "mean": 0.131147,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.841657,
+            "lo": 0.496325,
+            "mean": 0.662258,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.5,
+            "mean": 0.75,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.377665,
+            "lo": 0.105155,
+            "mean": 0.24141,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.666667,
+            "lo": 0.0,
+            "mean": 0.333333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 1.0,
+            "mean": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 133.22,
+        "10": 1500.44,
+        "3": 443.63,
+        "5": 719.85
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.690795,
+          "lo": 0.357076,
+          "mean": 0.530247,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.734089,
+          "lo": 0.432568,
+          "mean": 0.58831,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.611111,
+          "lo": 0.240741,
+          "mean": 0.425926,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.925926,
+          "lo": 0.592593,
+          "mean": 0.777778,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.685185,
+          "lo": 0.296296,
+          "mean": 0.5,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.796296,
+          "lo": 0.444444,
+          "mean": 0.62963,
+          "n": 27
+        }
+      }
+    },
+    "mini-C1": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.302577,
+            "lo": 0.0,
+            "mean": 0.135911,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.824034,
+            "lo": 0.118599,
+            "mean": 0.471316,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 0.875,
+            "lo": 0.125,
+            "mean": 0.5,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.279814,
+            "lo": 0.0,
+            "mean": 0.136255,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.666667,
+            "lo": 0.0,
+            "mean": 0.333333,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 0.745533,
+            "lo": 0.245533,
+            "mean": 0.491066,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 0.875,
+            "lo": 0.125,
+            "mean": 0.5,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 0.63093,
+            "lo": 0.333333,
+            "mean": 0.531731,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.0,
+            "mean": 0.666667,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 350.0,
+        "10": 3500.0,
+        "3": 1050.0,
+        "5": 1750.0
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.419225,
+          "lo": 0.153708,
+          "mean": 0.279145,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.470255,
+          "lo": 0.204084,
+          "mean": 0.334888,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.240741,
+          "lo": 0.018519,
+          "mean": 0.111111,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.759259,
+          "lo": 0.37037,
+          "mean": 0.574074,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.462963,
+          "lo": 0.148148,
+          "mean": 0.296296,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.574074,
+          "lo": 0.240741,
+          "mean": 0.407407,
+          "n": 27
+        }
+      }
+    },
+    "mini-C2": {
+      "by_type": {
+        "colloquial": {
+          "ndcg@10": {
+            "hi": 0.555556,
+            "lo": 0.0,
+            "mean": 0.222222,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.5,
+            "lo": 0.0,
+            "mean": 0.166667,
+            "n": 6
+          }
+        },
+        "crossref": {
+          "ndcg@10": {
+            "hi": 0.33862,
+            "lo": 0.076643,
+            "mean": 0.223912,
+            "n": 4
+          },
+          "recall@5": {
+            "hi": 0.375,
+            "lo": 0.0,
+            "mean": 0.125,
+            "n": 4
+          }
+        },
+        "definition": {
+          "ndcg@10": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          },
+          "recall@5": {
+            "hi": 0.0,
+            "lo": 0.0,
+            "mean": 0.0,
+            "n": 6
+          }
+        },
+        "factoid": {
+          "ndcg@10": {
+            "hi": 0.791667,
+            "lo": 0.166667,
+            "mean": 0.495533,
+            "n": 8
+          },
+          "recall@5": {
+            "hi": 0.875,
+            "lo": 0.125,
+            "mean": 0.5,
+            "n": 8
+          }
+        },
+        "number": {
+          "ndcg@10": {
+            "hi": 0.63093,
+            "lo": 0.0,
+            "mean": 0.21031,
+            "n": 3
+          },
+          "recall@5": {
+            "hi": 1.0,
+            "lo": 0.0,
+            "mean": 0.333333,
+            "n": 3
+          }
+        }
+      },
+      "checked_subset": {
+        "ndcg@10": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        },
+        "recall@5": {
+          "hi": null,
+          "lo": null,
+          "mean": null,
+          "n": 0
+        }
+      },
+      "mean_retrieved_tokens_at_k": {
+        "1": 63.48,
+        "10": 892.52,
+        "3": 228.48,
+        "5": 407.44
+      },
+      "metrics": {
+        "mrr@10": {
+          "hi": 0.364649,
+          "lo": 0.095453,
+          "mean": 0.218915,
+          "n": 27
+        },
+        "ndcg@10": {
+          "hi": 0.399595,
+          "lo": 0.12291,
+          "mean": 0.252747,
+          "n": 27
+        },
+        "recall@1": {
+          "hi": 0.296296,
+          "lo": 0.037037,
+          "mean": 0.148148,
+          "n": 27
+        },
+        "recall@10": {
+          "hi": 0.537037,
+          "lo": 0.203704,
+          "mean": 0.37037,
+          "n": 27
+        },
+        "recall@3": {
+          "hi": 0.407407,
+          "lo": 0.092593,
+          "mean": 0.240741,
+          "n": 27
+        },
+        "recall@5": {
+          "hi": 0.407407,
+          "lo": 0.092593,
+          "mean": 0.240741,
+          "n": 27
+        }
+      }
+    }
+  }
+}

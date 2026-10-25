@@ -30,3 +30,25 @@ jobs:
           python-version: "3.13"
       - run: uv sync --locked
       - run: uv run pytest tests/unit -q
+
+  bench:
+    runs-on: ubuntu-24.04
+    needs: [lint, test]
+    env:
+      PRUEFSTAND_LLM_MODE: replay
+      HF_HUB_OFFLINE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - run: uv run pytest tests/integration -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-report
+          path: |
+            runs/ci/report
+            runs/ci/site
+          if-no-files-found: ignore

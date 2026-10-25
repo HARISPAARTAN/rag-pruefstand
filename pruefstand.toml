@@ -219,6 +219,7 @@ corpus.snapshot_path = "fixtures/ci/gii/snapshot.json"
 corpus.units_path = "runs/ci/units.jsonl.gz"
 retrieval.cache_dir = "fixtures/ci/cache"
 retrieval.allow_compute = false
+retrieval.measure_truncation = false  # CI has no model files; the full run records the truncation rates
 questions.path = "fixtures/ci/questions.jsonl"
 latency.sample = 0
 generation.variants = ["bm25-C1", "hyb+rr-C2"]

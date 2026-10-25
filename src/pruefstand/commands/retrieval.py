@@ -6,6 +6,7 @@ from typing import Annotated
 
 import typer
 
+from pruefstand.aggregate import summary_lines
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, guarded, load
 from pruefstand.corpus.gii import load_units
 from pruefstand.pipeline import run_all, stage_latency, stage_metrics, stage_retrieve
@@ -51,9 +52,8 @@ def metrics(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONF
     cfg = load(profile, config)
     with guarded():
         result = stage_metrics(cfg)
-    for config_id, variant in result["variants"].items():
-        r5 = variant["metrics"]["recall@5"]
-        typer.echo(f"{config_id:12s} recall@5 {r5['mean']:.3f} [{r5['lo']:.3f}, {r5['hi']:.3f}]")
+    for line in summary_lines(result):
+        typer.echo(line)
 
 
 def search(

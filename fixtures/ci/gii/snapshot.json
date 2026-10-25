@@ -1,0 +1,14 @@
+{
+  "fetched_at": "2026-10-25",
+  "laws": {
+    "messbg": {
+      "builddate": "20260506175642",
+      "bytes": 45007,
+      "law_abbr": "MsbG",
+      "sha256": "30875c53396267ef47772bd5f53877295cfdc8a0c9bee4a6786b1abf0255249b",
+      "url": "https://www.gesetze-im-internet.de/messbg/xml.zip"
+    }
+  },
+  "licence_note": "Gesetze und Verordnungen sind nach § 5 Abs. 1 UrhG gemeinfrei",
+  "source": "gesetze-im-internet.de, Bundesministerium der Justiz; nichtamtliche konsolidierte Fassung"
+}

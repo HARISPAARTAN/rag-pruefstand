@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 from typer.testing import CliRunner
 
-from pruefstand.aggregate import compute_retrieval_metrics, per_question_metrics
+from pruefstand.aggregate import compute_retrieval_metrics, per_question_metrics, summary_lines
 from pruefstand.bench import ModelHub, hits_path, open_caches, retrieve_chunking, run_retrieval
 from pruefstand.chunking import chunks_path, load_chunks
 from pruefstand.cli import app
@@ -83,6 +83,7 @@ def cfg(root, tmp_path) -> Config:
     data["corpus"]["units_path"] = str(tmp_path / "units.jsonl.gz")
     data["retrieval"]["cache_dir"] = str(tmp_path / "cache")
     data["retrieval"]["allow_compute"] = True
+    data["retrieval"]["measure_truncation"] = True  # the ci profile switches it off: CI has no model files
     data["questions"]["path"] = str(tmp_path / "questions.jsonl")
     data["latency"]["sample"] = 3
     config = Config(data=data, profile="ci", root=root)
@@ -341,3 +342,36 @@ def test_changed_model_settings_invalidate_the_cached_scores(cfg, model, key, va
     cfg.data["models"][model][key] = value
     with pytest.raises(PruefstandError):
         run_retrieval(cfg, FakeHub(cfg))
+
+
+def test_summary_prints_the_truncation_table_next_to_the_dense_versus_english_comparison(cfg):
+    cfg.data["models"]["mini"]["max_seq_length"] = 40
+    run_retrieval(cfg, FakeHub(cfg))
+    result = compute_retrieval_metrics(cfg)
+    lines = summary_lines(result)
+    assert sum(line.startswith(tuple(result["variants"])) for line in lines) == 12
+    text = chr(10).join(lines)
+    english = text.index("dense vs English")
+    table = text.index("truncation")
+    assert abs(table - english) < 700  # the table follows the comparison directly
+    for chunking in ("C1", "C2"):
+        mini = result["truncation"][chunking]["mini"]
+        row = next(line for line in lines if line.split()[:2] == ["mini", chunking])
+        assert f"{mini['n_truncated']}/{mini['n_chunks']}" in row
+        assert f"{mini['truncation_rate'] * 100:.1f}%" in row
+    assert any(line.split()[:2] == ["e5", "C2"] for line in lines)
+    mini_c1 = next(line for line in lines if line.startswith("mini-C1 "))
+    assert "truncated" in mini_c1
+
+
+def test_truncation_is_not_measured_when_switched_off(cfg):
+    cfg.data["retrieval"]["measure_truncation"] = False
+    run_retrieval(cfg, FakeHub(cfg))
+    result = compute_retrieval_metrics(cfg)
+    assert result["truncation"] == {"C1": {"e5": None, "mini": None}, "C2": {"e5": None, "mini": None}}
+    assert summary_lines(result)[-1] == "truncation: not measured (offline profile without model files)"
+
+
+def test_ci_profile_does_not_measure_truncation(root):
+    assert load_config(root / "pruefstand.toml", "ci")["retrieval"]["measure_truncation"] is False
+    assert "measure_truncation" not in load_config(root / "pruefstand.toml", "full")["retrieval"]
