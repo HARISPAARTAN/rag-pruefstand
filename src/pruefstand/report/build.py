@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import html
 import re
+from collections import Counter
 from pathlib import Path
 
-from pruefstand.bench import config_ids
-from pruefstand.config import Config
+from pruefstand.bench import config_ids, load_questions
+from pruefstand.config import Config, load_config
+from pruefstand.errors import PruefstandError
 from pruefstand.io import read_json, write_json
+from pruefstand.manifest import RUNTIME_CONFIG, published_retrieval_hash
 from pruefstand.report.charts import RETRIEVERS, latency_svg, recall_at_k_svg, retrieval_matrix_svg
 from pruefstand.report.text import TEXT, fmt, fmt_ci
 
@@ -20,6 +23,15 @@ REPO_URL = "https://github.com/HARISPAARTAN/rag-pruefstand"
 README_START = "<!-- results:start -->"
 README_END = "<!-- results:end -->"
 METRIC_COLUMNS = ("recall@1", "recall@3", "recall@5", "recall@10", "mrr@10", "ndcg@10")
+CONTEXT_KS = ("1", "3", "5", "10")
+BORDERLINE_LOWER_BOUND = 0.01  # a lower bound below this is called close to zero
+# Machine facts that the manifest does not hold (it records only the generic CPU string); from the owner's run notes.
+MACHINE_DETAIL = {
+    "full-2026-10-25": {
+        "de": "AMD Ryzen 9 9900X (12 Kerne, 24 Threads), 61,6 GB RAM, Windows 11",
+        "en": "AMD Ryzen 9 9900X (12 cores, 24 threads), 61.6 GB RAM, Windows 11",
+    }
+}
 
 
 def _optional(path: Path) -> dict | None:
@@ -73,7 +85,14 @@ def finding_lines(metrics: dict, lang: str) -> list[str]:
     pairs = [_comparison(metrics, "e5+rr-C2", "e5-C2"), _comparison(metrics, "hyb+rr-C2", "hyb-C2")]
     if all(pair is not None and pair["verdict"] == "better" for pair in pairs):
         texts = [_diff_text(t["finding_rerank_pair"], pair, lang) for pair in pairs]
-        lines.append(t["finding_rerank"].format(pairs="; ".join(texts)))
+        line = t["finding_rerank"].format(pairs="; ".join(texts))
+        for pair in pairs:
+            if pair["lo"] < BORDERLINE_LOWER_BOUND:
+                line += " " + t["finding_rerank_close"].format(
+                    a=pair["a"], b=pair["b"], lo=fmt(pair["lo"], lang, signed=True)
+                )
+        lines.append(line)
+    lines.extend(_dense_share_lines(metrics, lang))
     best = metrics["headline"]["best"]
     highest = best.get("highest_point_estimate")
     if highest and highest["config_id"] != best["config_id"]:
@@ -86,6 +105,36 @@ def finding_lines(metrics: dict, lang: str) -> list[str]:
             )
         )
     return lines
+
+
+def _mean(metrics: dict, config_id: str, name: str = "recall@5") -> float | None:
+    variant = metrics["variants"].get(config_id)
+    return None if variant is None else variant["metrics"][name]["mean"]
+
+
+def _dense_share_lines(metrics: dict, lang: str) -> list[str]:
+    """Where the gap between the headline stack and BM25 comes from, by point estimates only.
+
+    Stated only when the dense model's share of the gap is larger than the reranking gain on the hybrid path;
+    the dense-versus-BM25 comparison was not declared in advance, so no interval is quoted.
+    """
+    head = metrics["headline"]["stack_vs_lexical"]
+    dense, lexical = _mean(metrics, "e5-C2"), _mean(metrics, head["b"])
+    hybrid, stack = _mean(metrics, "hyb-C2"), _mean(metrics, head["a"])
+    if None in (dense, lexical, hybrid, stack) or not dense - lexical > stack - hybrid:
+        return []
+    t = TEXT[lang]
+    return [
+        t["finding_dense_share"].format(
+            total=fmt(head["diff"], lang, signed=True),
+            stack=head["a"],
+            lexical=head["b"],
+            dense="e5-C2",
+            dense_mean=fmt(dense, lang),
+            lexical_mean=fmt(lexical, lang),
+            dense_gap=fmt(dense - lexical, lang, signed=True),
+        )
+    ]
 
 
 def question_note(metrics: dict, meta: dict, lang: str) -> str:
@@ -121,6 +170,17 @@ def limit_lines(metrics: dict, meta: dict, lang: str) -> list[str]:
         lines.append(
             t["platform_line"].format(
                 os=machine["os"], cpu=machine["cpu"] or "unknown", python=machine["python"]
+            )
+        )
+    provenance = meta.get("provenance")
+    if provenance:
+        lines.append(
+            t["provenance_line"].format(
+                run_hash=provenance["run_hash"],
+                git=provenance["git"],
+                sections=", ".join(provenance["changed_sections"]) or t["provenance_none"],
+                retrieval_hash=provenance["retrieval_hash"],
+                same=t["provenance_same"] if provenance["retrieval_unchanged"] else t["provenance_diff"],
             )
         )
     truncation = metrics.get("truncation") or {}
@@ -182,6 +242,14 @@ def build_tables(metrics: dict, latency: dict | None, answers: dict | None, lang
             ],
         ),
     }
+    if all("mean_retrieved_tokens_at_k" in variants[cid] for cid in order):
+        tables["context"] = (
+            [t["variant"], *[f"k = {k}" for k in CONTEXT_KS]],
+            [
+                [cid, *[fmt(variants[cid]["mean_retrieved_tokens_at_k"][k], lang, 0) for k in CONTEXT_KS]]
+                for cid in order
+            ],
+        )
     types = sorted(metrics["question_types"])
     answerable_types = [kind for kind in types if kind != "unanswerable"]
     tables["by_type"] = (
@@ -231,15 +299,50 @@ def build_tables(metrics: dict, latency: dict | None, answers: dict | None, lang
     return tables
 
 
+def _context_markdown(tables: dict, t: dict) -> list[str]:
+    if "context" not in tables:
+        return []
+    return [f"### {t['context']}", "", md_table(*tables["context"]), "", t["context_note"], ""]
+
+
 def md_table(headers: list[str], rows: list[list[str]]) -> str:
     lines = ["| " + " | ".join(headers) + " |", "|" + "---|" * len(headers)]
     lines += ["| " + " | ".join(row) + " |" for row in rows]
     return "\n".join(lines)
 
 
+def fmt_int(value: int, lang: str) -> str:
+    return f"{value:,}".replace(",", "." if lang == "de" else ",")
+
+
+def latency_note(latency: dict, meta: dict, lang: str) -> str:
+    t = TEXT[lang]
+    laws = meta.get("latency_laws")
+    note = t["latency_note"].format(
+        n=latency["n_questions"],
+        laws=", ".join(f"{n} {law}" for law, n in laws.items()) if laws else "?",
+        cpu=latency["machine"]["cpu"] or "unknown",
+    )
+    detail = (meta.get("machine_detail") or {}).get(lang)
+    return note + (t["latency_machine"].format(detail=detail) if detail else "")
+
+
 def _method_points(metrics: dict, meta: dict, lang: str) -> list[str]:
     t = TEXT[lang]
-    points = [point.format(boot=metrics["n_bootstrap"], seed=metrics["seed"]) for point in t["method_points"]]
+    relevance = metrics["relevance"]
+    pairs = {(c["a"], c["b"]) for c in metrics["comparisons"]}
+    values = {
+        "boot": metrics["n_bootstrap"],
+        "seed": metrics["seed"],
+        "long_chars": fmt_int(relevance["long_unit_chars"], lang),
+        "min_chars": relevance["min_overlap_chars"],
+        "share": round(relevance["min_overlap_share"] * 100),
+        "passage": relevance["n_passage_based_questions"],
+        "answerable": metrics["n_answerable"],
+        "n_comparisons": len(metrics["comparisons"]),
+        "n_pairs": len(pairs),
+    }
+    points = [point.format(**values) for point in t["method_points"]]
     return points + limit_lines(metrics, meta, lang)
 
 
@@ -272,6 +375,9 @@ def render_markdown(metrics: dict, latency: dict | None, answers: dict | None, m
         "",
         md_table(*tables["all_metrics"]),
         "",
+        t["all_metrics_note"],
+        "",
+        *_context_markdown(tables, t),
         f"## {t['comparisons']}",
         "",
         md_table(*tables["comparisons"]),
@@ -285,7 +391,7 @@ def render_markdown(metrics: dict, latency: dict | None, answers: dict | None, m
     ]
     if latency:
         parts += [
-            t["latency_note"].format(n=latency["n_questions"], cpu=latency["machine"]["cpu"] or "unknown"),
+            latency_note(latency, meta, lang),
             "",
             md_table(*tables["latency"]),
             "",
@@ -312,6 +418,16 @@ def html_table(headers: list[str], rows: list[list[str]]) -> str:
         "<tr>" + "".join(f"<td>{html.escape(cell)}</td>" for cell in row) + "</tr>" for row in rows
     )
     return f'<div class="table"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+
+
+def _context_html(tables: dict, t: dict) -> list[str]:
+    if "context" not in tables:
+        return []
+    return [
+        f"<h2>{html.escape(t['context'])}</h2>",
+        html_table(*tables["context"]),
+        f'<p class="note">{html.escape(t["context_note"])}</p>',
+    ]
 
 
 def _md_inline(text: str) -> str:
@@ -367,7 +483,7 @@ def render_html(
     ]
     if latency:
         sections += [
-            f'<p class="note">{html.escape(t["latency_note"].format(n=latency["n_questions"], cpu=latency["machine"]["cpu"] or "unknown"))}</p>',
+            f'<p class="note">{html.escape(latency_note(latency, meta, lang))}</p>',
             f"<figure>{svgs['latency']}</figure>",
             html_table(*tables["latency"]),
         ]
@@ -385,6 +501,8 @@ def render_html(
         f'<p class="pending">{_md_inline(t["calibration_pending"])}</p>',
         f"<h2>{t['all_metrics']}</h2>",
         html_table(*tables["all_metrics"]),
+        f'<p class="note">{html.escape(t["all_metrics_note"])}</p>',
+        *_context_html(tables, t),
         f"<h2>{t['method']}</h2>",
         "<ul>" + "".join(f"<li>{html.escape(p)}</li>" for p in _method_points(metrics, meta, lang)) + "</ul>",
         f'<footer>{t["repo"]}: <a href="{REPO_URL}">{REPO_URL}</a></footer>',
@@ -427,7 +545,34 @@ def report_meta(cfg: Config) -> dict:
         manifest = _optional(cfg.run_dir / "manifest.json")
         if manifest:
             meta["machine"] = manifest["machine"]
+            meta["machine_detail"] = MACHINE_DETAIL.get(cfg.run_id)
+            meta["provenance"] = _provenance(cfg, manifest)
+        sample = int(cfg["latency"]["sample"])
+        if sample > 0 and cfg["questions"]["path"]:
+            answerable = sorted((q for q in load_questions(cfg) if q["answerable"]), key=lambda q: q["qid"])
+            laws = Counter(q["law"] for q in answerable[:sample])
+            meta["latency_laws"] = dict(sorted(laws.items(), key=lambda item: (-item[1], item[0])))
     return meta
+
+
+def _provenance(cfg: Config, manifest: dict) -> dict | None:
+    """What the run-time configuration (committed next to the manifest) says about the current one."""
+    runtime_path = cfg.run_dir / RUNTIME_CONFIG
+    if not runtime_path.is_file():
+        return None
+    runtime = load_config(runtime_path, manifest["profile"])
+    try:
+        published, _ = published_retrieval_hash(cfg)
+    except PruefstandError:
+        return None
+    changed = sorted(key for key in cfg.data if cfg.data[key] != runtime.data.get(key))
+    return {
+        "run_hash": manifest["config_sha256"][:12],
+        "git": manifest["git_sha"][:7],
+        "changed_sections": changed,
+        "retrieval_hash": published[:12],
+        "retrieval_unchanged": cfg.retrieval_config_hash() == published,
+    }
 
 
 def build_report(cfg: Config) -> list[str]:

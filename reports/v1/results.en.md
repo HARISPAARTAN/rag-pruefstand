@@ -9,7 +9,8 @@
 - e5-C2 vs mini-C2 (recall@5): +0.408 (95% CI +0.341 to +0.474) – better. This is not a pure language effect: the models also differ in size, training and in how much of long chunks they read (see limitations).
 - hyb+rr-C2 vs bm25-C2 (recall@5): +0.171 (95% CI +0.113 to +0.231) – better.
 - Hybrid fusion adds nothing measurable over dense retrieval alone: hyb-C2 vs e5-C2 (recall@5): +0.005 (95% CI -0.044 to +0.053) – no measurable difference.
-- The gain comes from reranking: e5+rr-C2 vs e5-C2 +0.076 [+0.021, +0.137]; hyb+rr-C2 vs hyb-C2 +0.059 [+0.006, +0.110] (recall@5, 95% CI).
+- On top of dense retrieval, reranking is what adds a measurable gain: e5+rr-C2 vs e5-C2 +0.076 [+0.021, +0.137]; hyb+rr-C2 vs hyb-C2 +0.059 [+0.006, +0.110] (recall@5, 95% CI). The lower bound of the comparison hyb+rr-C2 vs hyb-C2 (+0.006) is close to zero; this finding is borderline.
+- By the point estimates, most of the gap to BM25 (+0.171, hyb+rr-C2 vs bm25-C2) comes from the dense model: e5-C2 0.642 vs bm25-C2 0.535 (+0.107). That comparison was not declared in advance and has no interval here.
 - For context: the highest point estimate for recall@5 belongs to e5+rr-C2 (0.718, 95% CI 0.661 to 0.774). No comparison with the headline configuration was declared in advance; the headline configuration was fixed before the run, not chosen after seeing results.
 
 ## Retrieval matrix (recall@5, 95% CI)
@@ -43,6 +44,27 @@
 | hyb-C2 | 0.427 [0.364, 0.486] | 0.562 [0.501, 0.625] | 0.647 [0.586, 0.707] | 0.752 [0.698, 0.806] | 0.565 [0.507, 0.621] | 0.595 [0.541, 0.645] |
 | e5+rr-C2 | 0.535 [0.472, 0.600] | 0.677 [0.617, 0.734] | 0.718 [0.661, 0.774] | 0.769 [0.715, 0.821] | 0.667 [0.609, 0.721] | 0.673 [0.620, 0.722] |
 | hyb+rr-C2 | 0.522 [0.458, 0.585] | 0.678 [0.618, 0.735] | 0.706 [0.649, 0.762] | 0.777 [0.724, 0.828] | 0.658 [0.602, 0.715] | 0.668 [0.617, 0.719] |
+
+nDCG@10 is comparable only within one chunking: C1 and C2 are normalised against their own ideals. C1 and C2 are compared with recall@k and MRR@10.
+
+### Context size: mean tokens of the top-k chunks
+
+| Variant | k = 1 | k = 3 | k = 5 | k = 10 |
+|---|---|---|---|---|
+| bm25-C1 | 350 | 1050 | 1750 | 3490 |
+| e5-C1 | 349 | 1049 | 1750 | 3500 |
+| mini-C1 | 338 | 1034 | 1729 | 3470 |
+| hyb-C1 | 350 | 1050 | 1750 | 3500 |
+| e5+rr-C1 | 350 | 1050 | 1750 | 3499 |
+| hyb+rr-C1 | 350 | 1050 | 1750 | 3500 |
+| bm25-C2 | 154 | 493 | 845 | 1752 |
+| e5-C2 | 155 | 496 | 860 | 1787 |
+| mini-C2 | 80 | 254 | 436 | 904 |
+| hyb-C2 | 163 | 510 | 881 | 1802 |
+| e5+rr-C2 | 169 | 531 | 902 | 1841 |
+| hyb+rr-C2 | 167 | 528 | 907 | 1848 |
+
+At equal k the context holds about two to four times as many tokens with C1 as with C2 (e5 tokenizer, C2 with header line). The C1-versus-C2 comparisons are therefore comparisons at equal k, not at equal context size.
 
 ## Comparisons (paired bootstrap, fixed before the run)
 
@@ -81,7 +103,7 @@
 
 ## Latency per stage (ms, p50 / p95)
 
-Measured on 50 questions, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD.
+Measured on 50 questions: the first 50 answerable ones by question id (50 eeg_2014), so not a cross-section of the laws. CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD. Machine: AMD Ryzen 9 9900X (12 cores, 24 threads), 61.6 GB RAM, Windows 11. A re-run on another CPU may move low decimals.
 
 | Variant | Embedding | Search | Rerank | Total |
 |---|---|---|---|---|
@@ -110,8 +132,10 @@ Measured on 50 questions, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD
 
 ## Method and limitations
 
-- Relevance by source spans: a chunk counts when it covers at least 50% or 200 characters of a gold Absatz.
-- Intervals: percentile bootstrap over questions (2000 resamples, seed 20261025); differences inside the interval are called “no measurable difference”.
+- Relevance by source spans, on two levels. Gold Absätze up to 2,000 characters (unit level): a chunk counts when it covers at least 200 characters or 50% of the Absatz, whichever is smaller. Longer gold Absätze (mostly definition norms, passage level): a chunk counts only when it overlaps an excerpt of the gold passage by at least 200 characters or 50% of the excerpt; another entry of the same long list does not count. 62 of 216 answerable questions are graded on the passage.
+- nDCG@10 is comparable only within one chunking: the gain of a rank is the share of the gold units the chunk covers for the first time; the ideal is the greedy minimal cover of the gold units by the chunks of the same chunking, and the metric is capped at 1. C1 and C2 are compared with recall@k and MRR@10.
+- Intervals: percentile bootstrap over questions (2000 resamples, seed 20261025); when the interval of a difference contains zero it is called “no measurable difference”.
+- The comparison table has 13 rows from 8 pairs fixed in advance and is not corrected for multiple testing. Questions are resampled as independent although some share gold Absätze, so the intervals may be too narrow. An interval such as [1.000, 1.000] (every question of a type hit, few questions) is not certainty.
 - The questions are model-generated and not yet checked by any human; the owner's check of 100 questions is pending.
 - The author of the questions and the primary judge of the live run are the same model (claude-sonnet-5-5); self-preference is possible. A second judge (claude-opus-5-5) and the human-checked subset bound the effect but do not remove it. The retrieval metrics need no judge.
 - The headline configuration hyb+rr-C2 was fixed before the run; the fusion (reciprocal rank fusion, k = 60) has no weight tuned on the test questions.
@@ -119,6 +143,7 @@ Measured on 50 questions, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD
 - The reranker is bge-reranker-base (trained mainly on Chinese and English); a multilingual reranker is on the roadmap.
 - All models run on the CPU (no GPU); latencies hold only for the machine named.
 - Platform: Windows-11-10.0.26200-SP0, CPU AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD, Python 3.13.11; no GPU.
+- Configuration hash at run time 625b4f08e540 (git 2f73d04). Sections of pruefstand.toml changed since: cost, llm, questions. Hash of the retrieval settings: 67af0ba7a702, unchanged; the hits belong to this configuration.
 - MiniLM truncation: all-MiniLM-L6-v2 reads at most 512 tokens; with C1, 92.3% of the chunks lose their tail (visible share 92.1% on average), with C2 9.4% (99.2%). multilingual-e5-base truncates 0.0% (C1) and 0.0% (C2) of the chunks.
 - Reranker truncation: bge-reranker-base reads at most 384 tokens per (question, chunk) pair; with C1, 15.1% of the reranked pairs lose their tail, with C2 4.3%. The effect on the results was not measured.
 

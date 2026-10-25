@@ -4,7 +4,7 @@
 
 Ein reproduzierbarer Prüfstand für Retrieval-Augmented Generation (RAG) auf deutschem Recht: fünf Bundesgesetze aus
 dem Energierecht, ein versionierter Fragensatz mit Herkunftsangabe (240 Fragen, davon 216 beantwortbar, modellgeneriert,
-0 menschlich geprüft), zwölf Retrieval-Varianten auf CPU und Konfidenzintervalle für jede Zahl. English version:
+0 menschlich geprüft), zwölf Retrieval-Varianten auf CPU und Konfidenzintervalle für jede Retrieval-Kennzahl. English version:
 [README.en.md](README.en.md). Bericht als Seite: https://harispaartan.github.io/rag-pruefstand/
 
 ## Problem
@@ -22,7 +22,7 @@ Listen.
 - hyb+rr-C2 gegenüber bm25-C2 (Recall@5): +0,171 (95-%-KI +0,113 bis +0,231) – besser.
 <!-- results:end -->
 
-Vollständiger Bericht: [reports/v1/results.md](reports/v1/results.md). Stand v0.1.0: Retrieval ist gemessen, auf einer
+Vollständiger Bericht: [reports/v1/results.md](reports/v1/results.md). Stand v0.1.1: Retrieval ist gemessen, auf einer
 Windows-CPU. Antworten, Judge-Bewertungen und Kosten pro 1.000 Anfragen sind **ausstehend** (Live-Lauf, v0.2.0); der
 Bericht zeigt dafür bewusst keine Zahlen.
 
@@ -31,10 +31,10 @@ Bericht zeigt dafür bewusst keine Zahlen.
 | Thema | Entscheidung | Warum |
 |---|---|---|
 | Korpus | EnWG, EEG 2023, MsbG, EnFG, KWKG 2025 von gesetze-im-internet.de | gemeinfrei (§ 5 UrhG), schwer für Retrieval, einfrierbar |
-| Relevanz | Überlappung mit Gold-Absätzen | fairer Vergleich beider Chunking-Strategien ([ADR-002](docs/adr/002-span-relevance.md)) |
+| Relevanz | Überlappung mit dem Gold-Absatz, bei Gold-Absätzen über 2.000 Zeichen (62 von 216 Fragen) mit der Gold-Passage | fairer Vergleich beider Chunking-Strategien ([ADR-002](docs/adr/002-span-relevance.md)) |
 | Suche | bm25s mit deutschem Stemming; exakter Kosinus in NumPy | keine Datenbank nötig ([ADR-005](docs/adr/005-no-vector-database.md)) |
 | Modelle | multilingual-e5-base, englisches MiniLM als Kontrolle, bge-reranker-base | laufen auf CPU, Revisionen gepinnt |
-| Fusion | Reciprocal Rank Fusion, k = 60 | kein Gewicht, das auf den Testfragen getunt wird; im Lauf bringt sie gegenüber reiner Dense-Suche nichts Messbares, der Gewinn kommt vom Reranking |
+| Fusion | Reciprocal Rank Fusion, k = 60 | kein Gewicht, das auf den Testfragen getunt wird; im Lauf bringt sie gegenüber reiner Dense-Suche nichts Messbares. Der Abstand zu BM25 (+0,171) geht nach den Punktschätzern überwiegend auf das Dense-Modell zurück (+0,107); das Reranking bringt darüber +0,076 (e5-Pfad) bzw. +0,059 (Hybrid-Pfad, untere Grenze +0,006, knapp) |
 | Fragen | 216 beantwortbare und 24 nicht beantwortbare Fragen, am 2026-10-25 vom implementierenden Modell geschrieben, automatisch gefiltert, 0 menschlich geprüft | das Datenblatt nennt das offen ([ADR-006](docs/adr/006-question-set.md)) |
 | Judge | eigene Rubrik in zwei Aufrufen (Treue ohne Referenzantwort, Korrektheit ohne Kontext), JSON-Ausgabe, Batch-API | prüfbar statt Framework-Standardprompts ([ADR-003](docs/adr/003-own-judge.md)) |
 | LLM-Aufrufe | eine Schnittstelle, Aufzeichnen und Abspielen, getrennte Kassetten je Profil | CI ohne Schlüssel ([ADR-004](docs/adr/004-provider-and-replay.md)) |
@@ -52,20 +52,57 @@ uv run pruefstand report
 `report` baut Bericht und Seite aus den eingecheckten Läufen neu; `uv run pruefstand metrics` auf dem veröffentlichten
 Lauf braucht zusätzlich die lokalen Chunk-Dateien (`uv run pruefstand chunk`).
 
-Vollständiger Retrieval-Lauf auf CPU (lädt etwa 2,3 GB Modelle nach `.cache/models`):
+Retrieval-Lauf nachvollziehen (lädt etwa 2,3 GB Modelle nach `.cache/models`). Der Lauf geht vom eingecheckten Korpus
+(`data/corpus/k1_units.jsonl.gz`) aus und schreibt nur nach `runs/verify-scratch/` (git-ignoriert); Korpus-Snapshot,
+Einheiten, der veröffentlichte Lauf `runs/full-2026-10-25`, `reports/` und `site/` bleiben unberührt:
 
 ```bash
 uv sync --locked --extra models
-uv run pruefstand corpus fetch
-uv run pruefstand models fetch
-uv run pruefstand all
+uv run --extra models pruefstand models fetch
+uv run --extra models pruefstand all --profile verify
+uv run pruefstand verify
 ```
 
+`verify` vergleicht Treffer (nach Inhalt) und `metrics.json` (nach Wert, Lauf-ID ignoriert) mit dem veröffentlichten Lauf
+und endet mit Exit-Code 1 und einer Liste, wenn etwas abweicht. Ohne den Cache `.cache/scores` berechnet `all` die
+Embeddings neu (etwa 22 Minuten auf einer 12-Kern-CPU); auf einer anderen CPU können niedrige Dezimalstellen abweichen.
+Die Gesetzestexte lassen sich nicht neu laden und vergleichen: gesetze-im-internet.de liefert nur die jeweils aktuelle
+Fassung. Deshalb gehört die Einheiten-Datei zum Repository, und `uv run pruefstand corpus fetch` verweigert das
+Überschreiben des Snapshots, wenn sich ein Gesetz geändert hat (nur `--update` ersetzt ihn, als neue Korpus-Version mit
+neuem Lauf). `uv run pruefstand all` im Profil `full` erzeugt dagegen einen neuen Lauf in `runs/full-2026-10-25` und ist
+keine Reproduktion.
+
 Live-Lauf mit API (kostet Geld, Prognose mit `uv run pruefstand cost estimate`, etwa 25 USD, Obergrenze 30 USD): Schlüssel
-in `ANTHROPIC_API_KEY` setzen, dann `PRUEFSTAND_LLM_MODE=record` und `uv run pruefstand generate` und
-`uv run pruefstand judge`. Der Lauf liest zuerst die Kassette `cassettes/full-2026-10-25.jsonl` und bezahlt nur fehlende
-Aufrufe; die Batch-ID des Judges steht in `runs/full-2026-10-25/batch_judge.json`, derselbe Befehl nimmt einen
-unterbrochenen Lauf wieder auf.
+in `ANTHROPIC_API_KEY` setzen und den Modus `record` wählen, in Bash `export PRUEFSTAND_LLM_MODE=record`, in PowerShell
+`$env:PRUEFSTAND_LLM_MODE = "record"`. **Zuerst den Pilot laufen lassen**, dann den vollen Judge:
+
+```bash
+uv run pruefstand generate --profile pilot
+uv run pruefstand judge --profile pilot
+```
+
+Der Pilot nimmt drei Fragen (die ersten zwei beantwortbaren nach Fragen-ID, beide aus dem EEG, und die erste nicht
+beantwortbare) und die Variante hyb+rr-C2, mit denselben Modellen, Prompts und Judge-Einstellungen wie der volle Lauf. Er
+liest Treffer und Chunks des veröffentlichten Laufs, schreibt Antworten, Bewertungen und Ausgaben nach
+`runs/pilot-2026-10-25/` und teilt sich die Kassette `cassettes/full-2026-10-25.jsonl` mit dem vollen Lauf: was der Pilot
+aufgezeichnet hat, bezahlt der volle Lauf nicht noch einmal. Danach prüfen: `judge_invalid`, `judge_failed` und
+`judge_refusals` in `runs/pilot-2026-10-25/answer_metrics.json`, Antworten mit `stop_reason` `max_tokens` in
+`answers.jsonl` (die Grenze von 1.000 Token des Judges schließt das Denken ein), die Batch-Runde in `batch_judge.json` und
+die Kosten pro Aufruf. Erst wenn das sauber ist, den vollen Lauf starten; wer die Judge-Grenze danach ändert, ändert die
+Anfragen und bezahlt die Pilotaufrufe noch einmal. Die drei Pilotfragen sind ein Rauchtest, keine berichtbare Teilmenge.
+
+```bash
+uv run pruefstand generate
+uv run pruefstand judge
+```
+
+Der volle Lauf liest zuerst die Kassette und bezahlt nur fehlende Aufrufe; die Batch-ID des Judges steht in
+`runs/full-2026-10-25/batch_judge.json`, derselbe Befehl nimmt einen unterbrochenen Lauf wieder auf. Vor jedem bezahlten
+Aufruf vergleicht der Befehl den Hash der Retrieval-Einstellungen mit dem veröffentlichten Lauf
+(`runs/full-2026-10-25/config.toml` ist dessen Konfiguration, Hash 625b4f08e540) und bricht bei einer Abweichung ab.
+`generate` und `judge` schreiben je Lauf einen Eintrag in `stage_manifests.json` im Lauf-Ordner (Konfigurations-Hash,
+Modelle, Kassette, Zeiten). Kassette, `spend.json`, `batch_judge.json` und `stage_manifests.json` sind die Prüfspur und
+werden nach dem Live-Lauf eingecheckt.
 
 ## Methode
 
@@ -78,11 +115,12 @@ nach dem Ergebnis ausgewählt. Details: [docs/method.md](docs/method.md), Rubrik
 
 Code: MIT. Gesetzestexte: gesetze-im-internet.de, Bundesministerium der Justiz; nichtamtliche konsolidierte Fassung,
 Stand 2026-10-25. Fragensatz: CC BY 4.0, modellgeneriert am 2026-10-25; die menschliche Prüfung von 100 Fragen steht aus
-([Datenblatt](data/questions/DATASHEET.md)). Alle Quellen: [DATA_LICENSES.md](DATA_LICENSES.md).
+([Datenblatt](data/questions/DATASHEET.md)). `questions review-import` schreibt die Urteile nach
+`data/questions/review/` und Änderungen in einen neuen Satz `k1_v2`; `k1_v1` bleibt unverändert. Alle Quellen: [DATA_LICENSES.md](DATA_LICENSES.md).
 
 ## Kosten
 
-v0.1.0 hat keinen bezahlten API-Aufruf gemacht. Prognose für einen Live-Lauf und Preistabelle:
+v0.1.0 und v0.1.1 haben keinen bezahlten API-Aufruf gemacht. Prognose für einen Live-Lauf und Preistabelle:
 [docs/cost-model.md](docs/cost-model.md).
 
 ## Grenzen

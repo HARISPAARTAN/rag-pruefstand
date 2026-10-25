@@ -61,3 +61,13 @@ def test_pilot_is_small_and_reads_the_published_run(full, pilot):
 def test_pilot_cannot_write_retrieval_artefacts(pilot, stage):
     with pytest.raises(PruefstandError, match="only reads those of run full-2026-10-25"):
         stage(pilot)
+
+
+def test_judge_without_answers_is_a_clean_error(pilot):
+    from typer.testing import CliRunner
+
+    from pruefstand.cli import app
+
+    result = CliRunner().invoke(app, ["judge", "--profile", "pilot"])
+    assert result.exit_code == 1 and "run `pruefstand generate` first" in result.output
+    assert not pilot.run_dir.exists()

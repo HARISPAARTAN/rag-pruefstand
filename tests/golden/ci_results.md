@@ -9,6 +9,7 @@
 - e5-C2 gegenüber mini-C2 (Recall@5): +0,463 (95-%-KI +0,278 bis +0,648) – besser. Das ist kein reiner Spracheffekt: die Modelle unterscheiden sich auch in Größe, Training und der Kürzung langer Chunks (siehe Grenzen).
 - hyb+rr-C2 gegenüber bm25-C2 (Recall@5): +0,278 (95-%-KI +0,111 bis +0,463) – besser.
 - Hybrid-Fusion bringt gegenüber reiner Dense-Suche nichts Messbares: hyb-C2 gegenüber e5-C2 (Recall@5): -0,074 (95-%-KI -0,222 bis +0,074) – kein messbarer Unterschied.
+- Der Abstand zu BM25 (+0,278, hyb+rr-C2 gegenüber bm25-C2) geht nach den Punktschätzern überwiegend auf das Dense-Modell zurück: e5-C2 0,704 gegenüber bm25-C2 0,500 (+0,204). Dieser Vergleich wurde vorab nicht festgelegt und hat hier kein Intervall.
 - Einordnung: Den höchsten Punktschätzer für Recall@5 hat e5+rr-C1 (0,870, 95-%-KI 0,741 bis 0,981). Ein Vergleich mit der Hauptkonfiguration wurde vorab nicht festgelegt; die Hauptkonfiguration wurde vor dem Lauf bestimmt, nicht nach dem Ergebnis gewählt.
 
 ## Retrieval-Matrix (Recall@5, 95-%-KI)
@@ -42,6 +43,27 @@
 | hyb-C2 | 0,426 [0,241, 0,611] | 0,500 [0,296, 0,685] | 0,630 [0,444, 0,796] | 0,778 [0,593, 0,926] | 0,530 [0,357, 0,691] | 0,588 [0,433, 0,734] |
 | e5+rr-C2 | 0,630 [0,444, 0,796] | 0,796 [0,648, 0,926] | 0,852 [0,704, 0,963] | 0,852 [0,704, 0,963] | 0,753 [0,605, 0,889] | 0,772 [0,634, 0,902] |
 | hyb+rr-C2 | 0,593 [0,407, 0,760] | 0,722 [0,556, 0,870] | 0,778 [0,630, 0,926] | 0,815 [0,667, 0,963] | 0,707 [0,556, 0,856] | 0,726 [0,573, 0,867] |
+
+nDCG@10 ist nur innerhalb eines Chunkings vergleichbar: C1 und C2 sind auf je eigene Ideale normiert. C1 und C2 werden mit Recall@k und MRR@10 verglichen.
+
+### Kontextmenge: mittlere Token der Top-k-Chunks
+
+| Variante | k = 1 | k = 3 | k = 5 | k = 10 |
+|---|---|---|---|---|
+| bm25-C1 | 350 | 1051 | 1737 | 3422 |
+| e5-C1 | 350 | 1050 | 1751 | 3502 |
+| mini-C1 | 350 | 1050 | 1750 | 3501 |
+| hyb-C1 | 350 | 1051 | 1751 | 3501 |
+| e5+rr-C1 | 350 | 1050 | 1751 | 3502 |
+| hyb+rr-C1 | 350 | 1051 | 1751 | 3501 |
+| bm25-C2 | 162 | 512 | 859 | 1744 |
+| e5-C2 | 147 | 444 | 756 | 1572 |
+| mini-C2 | 85 | 291 | 513 | 1115 |
+| hyb-C2 | 153 | 506 | 823 | 1716 |
+| e5+rr-C2 | 176 | 483 | 827 | 1716 |
+| hyb+rr-C2 | 168 | 507 | 848 | 1816 |
+
+Bei gleichem k enthält der Kontext mit C1 etwa das Doppelte bis Vierfache der Token wie mit C2 (e5-Tokenizer, C2 mit Kopfzeile). Die Vergleiche C1 gegen C2 sind deshalb Vergleiche bei gleichem k, nicht bei gleicher Kontextmenge.
 
 ## Vergleiche (gepaarter Bootstrap, vorab festgelegt)
 
@@ -97,8 +119,10 @@ In diesem Profil nicht gemessen.
 
 ## Methode und Grenzen
 
-- Relevanz über Quellspannen: ein Chunk zählt, wenn er mindestens 50 % oder 200 Zeichen eines Gold-Absatzes abdeckt.
-- Intervalle: Perzentil-Bootstrap über Fragen (2000 Ziehungen, Seed 20261025); Unterschiede innerhalb des Intervalls heißen „kein messbarer Unterschied“.
+- Relevanz über Quellspannen, auf zwei Ebenen. Gold-Absätze bis 2.000 Zeichen (Einheitsebene): ein Chunk zählt, wenn er mindestens 200 Zeichen oder 50 % des Absatzes abdeckt, je nachdem, was weniger ist. Längere Gold-Absätze (vor allem Definitionsnormen, Passagenebene): ein Chunk zählt nur, wenn er einen Auszug der Gold-Passage um mindestens 200 Zeichen oder 50 % des Auszugs überlappt; ein anderer Eintrag derselben langen Liste zählt nicht. 8 von 27 beantwortbaren Fragen werden auf der Passage bewertet.
+- nDCG@10 ist nur innerhalb eines Chunkings vergleichbar: der Gewinn eines Rangs ist der Anteil der Gold-Einheiten, den der Chunk erstmals abdeckt; das Ideal ist die gierige Minimalüberdeckung der Gold-Einheiten durch die Chunks desselben Chunkings, die Kennzahl ist auf höchstens 1 begrenzt. Zwischen C1 und C2 werden Recall@k und MRR@10 verglichen.
+- Intervalle: Perzentil-Bootstrap über Fragen (2000 Ziehungen, Seed 20261025); enthält das Intervall einer Differenz die Null, heißt es „kein messbarer Unterschied“.
+- Die Tabelle der Vergleiche hat 13 Zeilen aus 8 vorab festgelegten Paaren und ist nicht für mehrfaches Testen korrigiert. Die Fragen werden als unabhängig neu gezogen, obwohl einige Fragen Gold-Absätze teilen; die Intervalle können dadurch zu eng sein. Ein Intervall wie [1,000, 1,000] (alle Fragen eines Typs getroffen, wenige Fragen) ist keine Gewissheit.
 - Die Fragen sind modellgeneriert und noch von keinem Menschen geprüft; die Prüfung von 100 Fragen durch den Owner steht aus.
 - Autor der Fragen und Primär-Judge des Live-Laufs sind dasselbe Modell (claude-sonnet-5-5); Selbstpräferenz ist möglich. Ein zweiter Judge (claude-opus-5-5) und die menschlich geprüfte Teilmenge begrenzen den Effekt, beseitigen ihn nicht. Die Retrieval-Kennzahlen brauchen keinen Judge.
 - Die Hauptkonfiguration hyb+rr-C2 wurde vor dem Lauf festgelegt; die Fusion (Reciprocal Rank Fusion, k = 60) hat kein auf den Testfragen getuntes Gewicht.

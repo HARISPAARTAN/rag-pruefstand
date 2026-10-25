@@ -48,6 +48,12 @@ def fake_metrics() -> dict:
         "question_types": {"factoid": 27, "unanswerable": 3},
         "corpus": {"n_units": 220, "units_per_law": {"messbg": 220}},
         "variants": {cid: variant for cid in CONFIG_IDS},
+        "relevance": {
+            "long_unit_chars": 2000,
+            "min_overlap_chars": 200,
+            "min_overlap_share": 0.5,
+            "n_passage_based_questions": 5,
+        },
         "comparisons": [diff],
         "headline": {
             "best": {"config_id": "hyb+rr-C2", **ci(0.5)},
@@ -154,7 +160,21 @@ def test_published_report_german_wording(root):
     assert "24 nicht beantwortbare Fragen" in text
     assert "Geschrieben am 2026-10-25 von claude-sonnet-5-5" in text
     assert "Hybrid-Fusion bringt gegenüber reiner Dense-Suche nichts Messbares" in text
-    assert "Der Gewinn kommt vom Reranking" in text
+    assert "Über der Dense-Suche bringt erst das Reranking einen messbaren Gewinn" in text
+    assert "e5+rr-C2 gegenüber e5-C2 +0,076 [+0,021, +0,137]" in text
+    assert "hyb+rr-C2 gegenüber hyb-C2 +0,059 [+0,006, +0,110]" in text and "dieser Befund ist knapp" in text
+    assert "überwiegend auf das Dense-Modell zurück: e5-C2 0,642 gegenüber bm25-C2 0,535 (+0,107)" in text
+    assert "Der Gewinn kommt vom Reranking" not in text
+    assert "Gold-Absätze bis 2.000 Zeichen (Einheitsebene)" in text and "Passagenebene" in text
+    assert "62 von 216 beantwortbaren Fragen werden auf der Passage bewertet" in text
+    assert "nDCG@10 ist nur innerhalb eines Chunkings vergleichbar" in text
+    assert "gierige Minimalüberdeckung" in text and "auf höchstens 1 begrenzt" in text
+    assert "enthält das Intervall einer Differenz die Null" in text
+    assert "13 Zeilen aus 8 vorab festgelegten Paaren" in text
+    assert "den ersten 50 beantwortbaren nach Fragen-ID (50 eeg_2014)" in text and "Ryzen 9 9900X" in text
+    assert "Konfigurations-Hash zur Laufzeit 625b4f08e540 (git 2f73d04)" in text
+    assert "cost, llm, questions. Hash der Retrieval-Einstellungen: 67af0ba7a702, unverändert" in text
+    assert "Kontextmenge: mittlere Token der Top-k-Chunks" in text
     assert "Das ist kein reiner Spracheffekt" in text
     assert "Autor der Fragen und Primär-Judge des Live-Laufs sind dasselbe Modell" in text
     assert "Windows-11" in text and "AMD64" in text and "keine GPU" in text
@@ -172,7 +192,17 @@ def test_published_report_english_wording(root):
     assert "216 model-generated answerable questions, 0 human-checked" in text
     assert "Written on 2026-10-25 by claude-sonnet-5-5" in text
     assert "Hybrid fusion adds nothing measurable over dense retrieval alone" in text
-    assert "The gain comes from reranking" in text
+    assert "On top of dense retrieval, reranking is what adds a measurable gain" in text
+    assert "hyb+rr-C2 vs hyb-C2 +0.059 [+0.006, +0.110]" in text and "this finding is borderline" in text
+    assert "most of the gap to BM25 (+0.171, hyb+rr-C2 vs bm25-C2) comes from the dense model" in text
+    assert "The gain comes from reranking" not in text
+    assert (
+        "Gold Absätze up to 2,000 characters (unit level)" in text
+        and "62 of 216 answerable questions" in text
+    )
+    assert "nDCG@10 is comparable only within one chunking" in text and "greedy minimal cover" in text
+    assert "when the interval of a difference contains zero" in text
+    assert "Configuration hash at run time 625b4f08e540 (git 2f73d04)" in text
     assert "This is not a pure language effect" in text
     assert "MiniLM truncation" in text and "92.3%" in text and "Reranker truncation" in text
     assert "Pending: live run" in text

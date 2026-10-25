@@ -9,7 +9,8 @@
 - e5-C2 gegenüber mini-C2 (Recall@5): +0,408 (95-%-KI +0,341 bis +0,474) – besser. Das ist kein reiner Spracheffekt: die Modelle unterscheiden sich auch in Größe, Training und der Kürzung langer Chunks (siehe Grenzen).
 - hyb+rr-C2 gegenüber bm25-C2 (Recall@5): +0,171 (95-%-KI +0,113 bis +0,231) – besser.
 - Hybrid-Fusion bringt gegenüber reiner Dense-Suche nichts Messbares: hyb-C2 gegenüber e5-C2 (Recall@5): +0,005 (95-%-KI -0,044 bis +0,053) – kein messbarer Unterschied.
-- Der Gewinn kommt vom Reranking: e5+rr-C2 gegenüber e5-C2 +0,076 [+0,021, +0,137]; hyb+rr-C2 gegenüber hyb-C2 +0,059 [+0,006, +0,110] (Recall@5, 95-%-KI).
+- Über der Dense-Suche bringt erst das Reranking einen messbaren Gewinn: e5+rr-C2 gegenüber e5-C2 +0,076 [+0,021, +0,137]; hyb+rr-C2 gegenüber hyb-C2 +0,059 [+0,006, +0,110] (Recall@5, 95-%-KI). Die untere Grenze des Vergleichs hyb+rr-C2 gegenüber hyb-C2 (+0,006) liegt nahe null; dieser Befund ist knapp.
+- Der Abstand zu BM25 (+0,171, hyb+rr-C2 gegenüber bm25-C2) geht nach den Punktschätzern überwiegend auf das Dense-Modell zurück: e5-C2 0,642 gegenüber bm25-C2 0,535 (+0,107). Dieser Vergleich wurde vorab nicht festgelegt und hat hier kein Intervall.
 - Einordnung: Den höchsten Punktschätzer für Recall@5 hat e5+rr-C2 (0,718, 95-%-KI 0,661 bis 0,774). Ein Vergleich mit der Hauptkonfiguration wurde vorab nicht festgelegt; die Hauptkonfiguration wurde vor dem Lauf bestimmt, nicht nach dem Ergebnis gewählt.
 
 ## Retrieval-Matrix (Recall@5, 95-%-KI)
@@ -43,6 +44,27 @@
 | hyb-C2 | 0,427 [0,364, 0,486] | 0,562 [0,501, 0,625] | 0,647 [0,586, 0,707] | 0,752 [0,698, 0,806] | 0,565 [0,507, 0,621] | 0,595 [0,541, 0,645] |
 | e5+rr-C2 | 0,535 [0,472, 0,600] | 0,677 [0,617, 0,734] | 0,718 [0,661, 0,774] | 0,769 [0,715, 0,821] | 0,667 [0,609, 0,721] | 0,673 [0,620, 0,722] |
 | hyb+rr-C2 | 0,522 [0,458, 0,585] | 0,678 [0,618, 0,735] | 0,706 [0,649, 0,762] | 0,777 [0,724, 0,828] | 0,658 [0,602, 0,715] | 0,668 [0,617, 0,719] |
+
+nDCG@10 ist nur innerhalb eines Chunkings vergleichbar: C1 und C2 sind auf je eigene Ideale normiert. C1 und C2 werden mit Recall@k und MRR@10 verglichen.
+
+### Kontextmenge: mittlere Token der Top-k-Chunks
+
+| Variante | k = 1 | k = 3 | k = 5 | k = 10 |
+|---|---|---|---|---|
+| bm25-C1 | 350 | 1050 | 1750 | 3490 |
+| e5-C1 | 349 | 1049 | 1750 | 3500 |
+| mini-C1 | 338 | 1034 | 1729 | 3470 |
+| hyb-C1 | 350 | 1050 | 1750 | 3500 |
+| e5+rr-C1 | 350 | 1050 | 1750 | 3499 |
+| hyb+rr-C1 | 350 | 1050 | 1750 | 3500 |
+| bm25-C2 | 154 | 493 | 845 | 1752 |
+| e5-C2 | 155 | 496 | 860 | 1787 |
+| mini-C2 | 80 | 254 | 436 | 904 |
+| hyb-C2 | 163 | 510 | 881 | 1802 |
+| e5+rr-C2 | 169 | 531 | 902 | 1841 |
+| hyb+rr-C2 | 167 | 528 | 907 | 1848 |
+
+Bei gleichem k enthält der Kontext mit C1 etwa das Doppelte bis Vierfache der Token wie mit C2 (e5-Tokenizer, C2 mit Kopfzeile). Die Vergleiche C1 gegen C2 sind deshalb Vergleiche bei gleichem k, nicht bei gleicher Kontextmenge.
 
 ## Vergleiche (gepaarter Bootstrap, vorab festgelegt)
 
@@ -81,7 +103,7 @@
 
 ## Latenz pro Stufe (ms, p50 / p95)
 
-Gemessen auf 50 Fragen, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD.
+Gemessen auf 50 Fragen: den ersten 50 beantwortbaren nach Fragen-ID (50 eeg_2014), also kein Querschnitt der Gesetze. CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD. Maschine: AMD Ryzen 9 9900X (12 Kerne, 24 Threads), 61,6 GB RAM, Windows 11. Eine Wiederholung auf einer anderen CPU kann niedrige Dezimalstellen verschieben.
 
 | Variante | Embedding | Suche | Rerank | Gesamt |
 |---|---|---|---|---|
@@ -110,8 +132,10 @@ Gemessen auf 50 Fragen, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD.
 
 ## Methode und Grenzen
 
-- Relevanz über Quellspannen: ein Chunk zählt, wenn er mindestens 50 % oder 200 Zeichen eines Gold-Absatzes abdeckt.
-- Intervalle: Perzentil-Bootstrap über Fragen (2000 Ziehungen, Seed 20261025); Unterschiede innerhalb des Intervalls heißen „kein messbarer Unterschied“.
+- Relevanz über Quellspannen, auf zwei Ebenen. Gold-Absätze bis 2.000 Zeichen (Einheitsebene): ein Chunk zählt, wenn er mindestens 200 Zeichen oder 50 % des Absatzes abdeckt, je nachdem, was weniger ist. Längere Gold-Absätze (vor allem Definitionsnormen, Passagenebene): ein Chunk zählt nur, wenn er einen Auszug der Gold-Passage um mindestens 200 Zeichen oder 50 % des Auszugs überlappt; ein anderer Eintrag derselben langen Liste zählt nicht. 62 von 216 beantwortbaren Fragen werden auf der Passage bewertet.
+- nDCG@10 ist nur innerhalb eines Chunkings vergleichbar: der Gewinn eines Rangs ist der Anteil der Gold-Einheiten, den der Chunk erstmals abdeckt; das Ideal ist die gierige Minimalüberdeckung der Gold-Einheiten durch die Chunks desselben Chunkings, die Kennzahl ist auf höchstens 1 begrenzt. Zwischen C1 und C2 werden Recall@k und MRR@10 verglichen.
+- Intervalle: Perzentil-Bootstrap über Fragen (2000 Ziehungen, Seed 20261025); enthält das Intervall einer Differenz die Null, heißt es „kein messbarer Unterschied“.
+- Die Tabelle der Vergleiche hat 13 Zeilen aus 8 vorab festgelegten Paaren und ist nicht für mehrfaches Testen korrigiert. Die Fragen werden als unabhängig neu gezogen, obwohl einige Fragen Gold-Absätze teilen; die Intervalle können dadurch zu eng sein. Ein Intervall wie [1,000, 1,000] (alle Fragen eines Typs getroffen, wenige Fragen) ist keine Gewissheit.
 - Die Fragen sind modellgeneriert und noch von keinem Menschen geprüft; die Prüfung von 100 Fragen durch den Owner steht aus.
 - Autor der Fragen und Primär-Judge des Live-Laufs sind dasselbe Modell (claude-sonnet-5-5); Selbstpräferenz ist möglich. Ein zweiter Judge (claude-opus-5-5) und die menschlich geprüfte Teilmenge begrenzen den Effekt, beseitigen ihn nicht. Die Retrieval-Kennzahlen brauchen keinen Judge.
 - Die Hauptkonfiguration hyb+rr-C2 wurde vor dem Lauf festgelegt; die Fusion (Reciprocal Rank Fusion, k = 60) hat kein auf den Testfragen getuntes Gewicht.
@@ -119,6 +143,7 @@ Gemessen auf 50 Fragen, CPU: AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD.
 - Der Reranker ist bge-reranker-base (vor allem auf Chinesisch und Englisch trainiert); ein mehrsprachiger Reranker ist Roadmap.
 - Alle Modelle laufen auf der CPU (keine GPU); Latenzen gelten nur für die genannte Maschine.
 - Plattform: Windows-11-10.0.26200-SP0, CPU AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD, Python 3.13.11; keine GPU.
+- Konfigurations-Hash zur Laufzeit 625b4f08e540 (git 2f73d04). Seither geänderte Abschnitte von pruefstand.toml: cost, llm, questions. Hash der Retrieval-Einstellungen: 67af0ba7a702, unverändert; die Treffer gehören zu dieser Konfiguration.
 - MiniLM-Kürzung: all-MiniLM-L6-v2 liest höchstens 512 Token; bei C1 verlieren 92,3 % der Chunks ihr Ende (sichtbarer Anteil im Mittel 92,1 %), bei C2 9,4 % (99,2 %). multilingual-e5-base kürzt 0,0 % (C1) bzw. 0,0 % (C2) der Chunks.
 - Reranker-Kürzung: bge-reranker-base liest höchstens 384 Token je (Frage, Chunk)-Paar; bei C1 verlieren 15,1 % der neu bewerteten Paare ihr Ende, bei C2 4,3 %. Die Wirkung auf die Ergebnisse wurde nicht gemessen.
 

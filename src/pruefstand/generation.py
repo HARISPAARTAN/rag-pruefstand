@@ -9,6 +9,7 @@ from pruefstand.bench import load_questions
 from pruefstand.chunking import load_chunks
 from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
+from pruefstand.errors import PruefstandError
 from pruefstand.io import read_json, read_jsonl, write_json, write_jsonl
 from pruefstand.judge import (
     RUBRIC_VERSION,
@@ -224,6 +225,8 @@ def run_judging(
 ) -> list[dict]:
     table = table or load_prices(cfg.path(cfg["llm"]["costs"]))
     role = cfg["llm"]["judge"]
+    if not answers_path(cfg).is_file():
+        raise PruefstandError(f"{answers_path(cfg)} not found; run `pruefstand generate` first")
     pairs = judge_requests(cfg, read_jsonl(answers_path(cfg)), role)
     requests = [request for _, faithfulness, correctness in pairs for request in (faithfulness, correctness)]
     use_batch = bool(role.get("batch", False))
