@@ -9,11 +9,22 @@ from pruefstand.bench import run_retrieval
 from pruefstand.chunking import chunk_c1, chunk_c2, chunks_path, load_tokenizer, write_chunks
 from pruefstand.config import Config
 from pruefstand.corpus.gii import build_units, load_units
+from pruefstand.errors import PruefstandError
 from pruefstand.latency import run_latency
-from pruefstand.manifest import now_iso, write_manifest
+from pruefstand.manifest import check_retrieval_provenance, now_iso, write_manifest, write_stage_manifest
+
+
+def own_run_only(cfg: Config, stage: str) -> None:
+    """A profile that reads the retrieval artefacts of another run (pilot) must never write into them."""
+    if cfg.reads_foreign_run:
+        raise PruefstandError(
+            f"stage {stage!r} writes retrieval artefacts, but profile {cfg.profile!r} only reads those of run "
+            f"{cfg.source_run_id}; run it with the profile that owns the run"
+        )
 
 
 def stage_corpus_build(cfg: Config) -> list:
+    own_run_only(cfg, "corpus build")
     corpus = cfg["corpus"]
     return build_units(
         corpus["laws"],
@@ -25,6 +36,7 @@ def stage_corpus_build(cfg: Config) -> list:
 
 
 def stage_chunk(cfg: Config) -> dict[str, int]:
+    own_run_only(cfg, "chunk")
     units = load_units(cfg.path(cfg["corpus"]["units_path"]))
     tokenizer = load_tokenizer(str(cfg.path(cfg["tokenizer"]["path"])))
     chunking = cfg["chunking"]
@@ -37,37 +49,47 @@ def stage_chunk(cfg: Config) -> dict[str, int]:
 
 
 def stage_retrieve(cfg: Config) -> int:
+    own_run_only(cfg, "retrieve")
     return run_retrieval(cfg)
 
 
 def stage_latency(cfg: Config) -> dict:
+    own_run_only(cfg, "latency")
     return run_latency(cfg)
 
 
 def stage_metrics(cfg: Config) -> dict:
+    own_run_only(cfg, "metrics")
     return compute_retrieval_metrics(cfg)
 
 
-def stage_generate(cfg: Config, refresh: bool = False) -> list[dict]:
-    from pruefstand.generation import make_client, run_generation, save_stage_spend, stage_guard
+def _paid_stage(cfg: Config, stage: str, role: str, runner: str, refresh: bool) -> list[dict]:
+    """Run generate or judge. Record and live runs first check the retrieval provenance and afterwards leave an
+    entry in stage_manifests.json (also when the stage stops half way); replay writes nothing."""
+    from pruefstand import generation
 
-    guard = stage_guard(cfg, "generate")
+    paid = cfg.llm_mode() != "replay"
+    if paid:
+        check_retrieval_provenance(cfg)
+    started = now_iso()
+    guard = generation.stage_guard(cfg, stage)
     before = guard.spent
+    records = None
     try:
-        return run_generation(cfg, make_client(cfg, "generator", refresh), guard)
+        records = getattr(generation, runner)(cfg, generation.make_client(cfg, role, refresh), guard)
+        return records
     finally:
-        save_stage_spend(cfg, "generate", guard, before)
+        generation.save_stage_spend(cfg, stage, guard, before)
+        if paid:
+            write_stage_manifest(cfg, stage, started, records, guard.spent - before)
+
+
+def stage_generate(cfg: Config, refresh: bool = False) -> list[dict]:
+    return _paid_stage(cfg, "generate", "generator", "run_generation", refresh)
 
 
 def stage_judge(cfg: Config, refresh: bool = False) -> list[dict]:
-    from pruefstand.generation import make_client, run_judging, save_stage_spend, stage_guard
-
-    guard = stage_guard(cfg, "judge")
-    before = guard.spent
-    try:
-        return run_judging(cfg, make_client(cfg, "judge", refresh), guard)
-    finally:
-        save_stage_spend(cfg, "judge", guard, before)
+    return _paid_stage(cfg, "judge", "judge", "run_judging", refresh)
 
 
 def stage_answer_metrics(cfg: Config) -> dict:
@@ -77,6 +99,7 @@ def stage_answer_metrics(cfg: Config) -> dict:
 
 
 def stage_report(cfg: Config) -> list[str]:
+    own_run_only(cfg, "report")
     from pruefstand.report.build import build_report
 
     return build_report(cfg)

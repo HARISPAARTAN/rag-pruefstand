@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from pruefstand.answer import answer_record, build_answer_request, build_context
-from pruefstand.bench import hits_path, load_questions
-from pruefstand.chunking import chunks_path, load_chunks
+from pruefstand.bench import load_questions
+from pruefstand.chunking import load_chunks
 from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
 from pruefstand.io import read_json, read_jsonl, write_json, write_jsonl
@@ -24,6 +24,11 @@ from pruefstand.llm.ollama_client import OllamaClient
 from pruefstand.llm.replay import Cassette, ReplayClient, is_failed, replay_key
 from pruefstand.prompts import load_prompt
 from pruefstand.stats import bootstrap_ci, percentile
+
+
+def source_hits_path(cfg: Config):
+    """Hits of the retrieval run this profile reads (its own run, or the published one for the pilot)."""
+    return cfg.source_dir / "hits.jsonl.gz"
 
 
 def answers_path(cfg: Config):
@@ -111,7 +116,7 @@ def selected_questions(cfg: Config) -> list[dict]:
 def chunk_lookup(cfg: Config) -> dict:
     lookup = {}
     for chunking in cfg["retrieval"]["chunkings"]:
-        for chunk in load_chunks(chunks_path(cfg, chunking)):
+        for chunk in load_chunks(cfg.source_dir / f"chunks_{chunking}.jsonl.gz"):
             lookup[chunk.chunk_id] = chunk
     return lookup
 
@@ -142,7 +147,7 @@ def run_generation(
     role = cfg["llm"]["generator"]
     prompt = load_prompt(cfg.path(role["prompt"]))
     units_by_id = {unit.unit_id: unit for unit in load_units(cfg.path(cfg["corpus"]["units_path"]))}
-    hits = {(row["config_id"], row["qid"]): row for row in read_jsonl(hits_path(cfg))}
+    hits = {(row["config_id"], row["qid"]): row for row in read_jsonl(source_hits_path(cfg))}
     chunk_by_id = chunk_lookup(cfg)
     n_context = int(cfg["generation"]["context_chunks"])
     jobs = []

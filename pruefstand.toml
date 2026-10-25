@@ -100,8 +100,9 @@ b = "e5-C1"
 a = "hyb+rr-C2"
 b = "hyb+rr-C1"
 
-# `best` is a historical key name (renaming it would change the configuration hash): the configuration is the
-# pre-declared headline configuration (vorab festgelegte Hauptkonfiguration), not the best one by result.
+# `best` is a historical key name (the report reads it; a rename is planned for v0.2.0 together with a new
+# retrieval run): the configuration is the pre-declared headline configuration (vorab festgelegte
+# Hauptkonfiguration), not the best one by result.
 [headline]
 best = "hyb+rr-C2"
 dense_vs_english = ["e5-C2", "mini-C2"]
@@ -262,3 +263,14 @@ llm.cassette = "fixtures/llm/synthetic_cassette.jsonl"
 paths.run_id = "ci"
 paths.reports_dir = "runs/ci/report"
 paths.site_dir = "runs/ci/site"
+
+# Pilot for the live run: a few questions, the same models, prompts and judge settings as the full profile and the
+# same cassette file, so every recorded pilot call is reused (not paid again) by the full run. It reads hits and
+# chunks of the published run (paths.source_run_id), writes answers, judgements and spend to its own folder and
+# refuses every stage that would write retrieval artefacts. Three questions = the first two answerable ones by
+# qid (both EEG, so only a smoke test, never a reported subset) plus the first unanswerable one.
+[profile.pilot]
+paths.run_id = "pilot-2026-10-25"
+paths.source_run_id = "full-2026-10-25"
+generation.max_questions = 3
+generation.variants = ["hyb+rr-C2"]
