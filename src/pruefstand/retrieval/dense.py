@@ -12,6 +12,8 @@ import numpy as np
 
 from pruefstand.retrieval.ranking import tenant_mask, top_k
 
+NORMALIZE = True  # part of the embedding cache key: vectors are L2-normalised before they are cached
+
 
 class DenseIndex:
     def __init__(self, vectors: np.ndarray, tenants: list[str] | None = None) -> None:
@@ -39,7 +41,7 @@ class SentenceEncoder:
         vectors = self.model.encode(
             texts,
             batch_size=self.batch_size,
-            normalize_embeddings=True,
+            normalize_embeddings=NORMALIZE,
             convert_to_numpy=True,
             show_progress_bar=len(texts) > 64,
         )

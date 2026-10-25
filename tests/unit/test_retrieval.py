@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from pruefstand.retrieval.bm25 import BM25Index, analyze
-from pruefstand.retrieval.cache import CacheMiss, EmbeddingCache, RerankCache, embedding_key
+from pruefstand.retrieval.cache import CacheMiss, EmbeddingCache, RerankCache, embedding_key, rerank_key
 from pruefstand.retrieval.dense import DenseIndex
 from pruefstand.retrieval.fusion import rrf
 from pruefstand.retrieval.ranking import top_k
@@ -42,6 +42,8 @@ def test_rrf_known_example():
     assert [doc for doc, _ in fused] == [1, 3, 2]
     assert fused[0][1] == pytest.approx(expected_1)
     assert fused[1][1] == pytest.approx(expected_3)
+    assert rrf([[1, 2]])[0] == (1, round(1 / 61, 9))  # the default k is 60
+    assert rrf([[1, 2]], k=10)[0] == (1, round(1 / 11, 9))
     assert rrf([[1, 2, 3]], k=60, depth=2) == [(1, round(1 / 61, 9)), (2, round(1 / 62, 9))]
 
 
@@ -66,7 +68,7 @@ def test_bm25_tenant_filter_never_returns_other_tenant():
 
 
 def test_embedding_cache_miss_raises_when_compute_disabled(tmp_path):
-    cache = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=False)
+    cache = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=False, max_seq_length=512)
     with pytest.raises(CacheMiss):
         cache.get_many(["passage: a"], lambda texts: np.zeros((len(texts), 2)))
 
@@ -78,29 +80,74 @@ def test_embedding_cache_roundtrip_and_prune(tmp_path):
         calls.append(list(texts))
         return np.array([[float(len(t)), 1.0] for t in texts], dtype=np.float32)
 
-    cache = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=True)
+    cache = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=True, max_seq_length=512)
     first = cache.get_many(["aa", "bbb"], encode)
     cache.save()
     assert first.shape == (2, 2) and sorted(calls[0]) == ["aa", "bbb"]
     assert first[0].tolist() == [2.0, 1.0]
-    reloaded = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=False)
+    reloaded = EmbeddingCache(tmp_path, "e5", "model", "rev", allow_compute=False, max_seq_length=512)
     assert np.array_equal(reloaded.get_many(["bbb"], encode), np.array([[3.0, 1.0]], dtype=np.float32))
     assert reloaded.prune_unused() == 1
     reloaded.save()
-    assert EmbeddingCache(tmp_path, "e5", "model", "rev", False).keys() == {
-        embedding_key("model", "rev", "bbb")
+    assert EmbeddingCache(tmp_path, "e5", "model", "rev", False, max_seq_length=512).keys() == {
+        embedding_key("model", "rev", "bbb", 512)
     }
 
 
-def test_cache_key_depends_on_model_revision():
-    assert embedding_key("m", "r1", "text") != embedding_key("m", "r2", "text")
+def test_embedding_key_depends_on_every_setting_that_changes_the_vector():
+    base = embedding_key("m", "r1", "text", 512, True)
+    assert base != embedding_key("m", "r2", "text", 512, True)
+    assert base != embedding_key("m2", "r1", "text", 512, True)
+    assert base != embedding_key("m", "r1", "text2", 512, True)
+    assert base != embedding_key("m", "r1", "text", 256, True)
+    assert base != embedding_key("m", "r1", "text", 512, False)
+    assert base == embedding_key("m", "r1", "text", 512)
+
+
+def test_rerank_key_depends_on_revision_max_length_and_texts():
+    base = rerank_key("m", "r1", "q", "p", 384)
+    assert base != rerank_key("m", "r2", "q", "p", 384)
+    assert base != rerank_key("m2", "r1", "q", "p", 384)
+    assert base != rerank_key("m", "r1", "q", "p", 512)
+    assert base != rerank_key("m", "r1", "q2", "p", 384)
+    assert base != rerank_key("m", "r1", "q", "p2", 384)
+    assert rerank_key("m", "r1", "ab", "c", 384) != rerank_key("m", "r1", "a", "bc", 384)
+
+
+def test_changed_truncation_never_serves_stale_embeddings(tmp_path):
+    def encode(texts):
+        return np.ones((len(texts), 2), dtype=np.float32)
+
+    cache = EmbeddingCache(tmp_path, "mini", "model", "rev", allow_compute=True, max_seq_length=256)
+    cache.get_many(["aa"], encode)
+    cache.save()
+    longer = EmbeddingCache(tmp_path, "mini", "model", "rev", allow_compute=False, max_seq_length=512)
+    with pytest.raises(CacheMiss):
+        longer.get_many(["aa"], encode)
+    unnormalised = EmbeddingCache(
+        tmp_path, "mini", "model", "rev", allow_compute=False, max_seq_length=256, normalize=False
+    )
+    with pytest.raises(CacheMiss):
+        unnormalised.get_many(["aa"], encode)
+
+
+def test_changed_rerank_settings_never_serve_stale_scores(tmp_path):
+    cache = RerankCache(tmp_path, "rr", "model", "rev1", allow_compute=True, max_length=384)
+    cache.get_many([("q", "p")], lambda pairs: [0.5])
+    cache.save()
+    for revision, max_length in (("rev2", 384), ("rev1", 512)):
+        other = RerankCache(tmp_path, "rr", "model", revision, allow_compute=False, max_length=max_length)
+        with pytest.raises(CacheMiss):
+            other.get_many([("q", "p")], lambda pairs: [0.0])
 
 
 def test_rerank_cache_scores_and_miss(tmp_path):
-    cache = RerankCache(tmp_path, "rr", "model", "rev", allow_compute=True)
-    assert cache.get_many([("q", "p1"), ("q", "p2")], lambda pairs: [0.25, 0.75]) == [0.25, 0.75]
+    cache = RerankCache(tmp_path, "rr", "model", "rev", allow_compute=True, max_length=384)
+    by_passage = {"p1": 0.25, "p2": 0.75}  # the cache scores missing pairs in key order, so answer by content
+    scored = cache.get_many([("q", "p1"), ("q", "p2")], lambda pairs: [by_passage[p] for _, p in pairs])
+    assert scored == [0.25, 0.75]
     cache.save()
-    frozen = RerankCache(tmp_path, "rr", "model", "rev", allow_compute=False)
+    frozen = RerankCache(tmp_path, "rr", "model", "rev", allow_compute=False, max_length=384)
     assert frozen.get_many([("q", "p2")], lambda pairs: []) == [0.75]
     with pytest.raises(CacheMiss):
         frozen.get_many([("q", "p3")], lambda pairs: [0.0])

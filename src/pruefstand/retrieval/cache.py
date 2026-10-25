@@ -1,7 +1,9 @@
 """Content-addressed caches for embeddings and rerank scores.
 
-Keys are SHA-256 over model id, revision and the exact input text, so a cached value can never be reused for a
-different model or text. CI reads committed caches with allow_compute = false; a miss then raises CacheMiss.
+Keys are SHA-256 over model id, revision, the settings that change the numbers (embedding: max_seq_length and
+the normalise flag; reranker: max_length) and the exact input text, so a cached value can never be reused for a
+different model, a different truncation or a different text. CI reads committed caches with allow_compute =
+false; a miss then raises CacheMiss.
 """
 
 from __future__ import annotations
@@ -20,19 +22,35 @@ class CacheMiss(PruefstandError):
     pass
 
 
-def embedding_key(model_id: str, revision: str, text: str) -> str:
-    return sha256_text(f"{model_id}@{revision}\n{text}")
+def embedding_key(
+    model_id: str, revision: str, text: str, max_seq_length: int, normalize: bool = True
+) -> str:
+    settings = f"{model_id}@{revision}|len={max_seq_length}|norm={int(normalize)}"
+    return sha256_text(f"{settings}\n{text}")
 
 
-def rerank_key(model_id: str, revision: str, query: str, passage: str) -> str:
-    return sha256_text(f"{model_id}@{revision}\n{query}\n\x1f\n{passage}")
+def rerank_key(model_id: str, revision: str, query: str, passage: str, max_length: int) -> str:
+    settings = f"{model_id}@{revision}|max_length={max_length}"
+    return sha256_text(f"{settings}\n{query}\n\x1f\n{passage}")
 
 
 class EmbeddingCache:
-    def __init__(self, cache_dir: Path, name: str, model_id: str, revision: str, allow_compute: bool) -> None:
+    def __init__(
+        self,
+        cache_dir: Path,
+        name: str,
+        model_id: str,
+        revision: str,
+        allow_compute: bool,
+        *,
+        max_seq_length: int,
+        normalize: bool = True,
+    ) -> None:
         self.path = Path(cache_dir) / f"emb-{name}.npz"
         self.model_id = model_id
         self.revision = revision
+        self.max_seq_length = max_seq_length
+        self.normalize = normalize
         self.allow_compute = allow_compute
         self._rows: dict[str, np.ndarray] = {}
         self._used: set[str] = set()
@@ -49,7 +67,10 @@ class EmbeddingCache:
         return set(self._rows)
 
     def get_many(self, texts: Sequence[str], encode: Callable[[list[str]], np.ndarray]) -> np.ndarray:
-        keys = [embedding_key(self.model_id, self.revision, text) for text in texts]
+        keys = [
+            embedding_key(self.model_id, self.revision, text, self.max_seq_length, self.normalize)
+            for text in texts
+        ]
         missing = sorted(
             {key: text for key, text in zip(keys, texts, strict=True) if key not in self._rows}.items()
         )
@@ -84,10 +105,20 @@ class EmbeddingCache:
 
 
 class RerankCache:
-    def __init__(self, cache_dir: Path, name: str, model_id: str, revision: str, allow_compute: bool) -> None:
+    def __init__(
+        self,
+        cache_dir: Path,
+        name: str,
+        model_id: str,
+        revision: str,
+        allow_compute: bool,
+        *,
+        max_length: int,
+    ) -> None:
         self.path = Path(cache_dir) / f"rerank-{name}.json"
         self.model_id = model_id
         self.revision = revision
+        self.max_length = max_length
         self.allow_compute = allow_compute
         self._scores: dict[str, float] = (
             json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
@@ -101,7 +132,10 @@ class RerankCache:
     def get_many(
         self, pairs: Sequence[tuple[str, str]], score: Callable[[list[tuple[str, str]]], Sequence[float]]
     ) -> list[float]:
-        keys = [rerank_key(self.model_id, self.revision, query, passage) for query, passage in pairs]
+        keys = [
+            rerank_key(self.model_id, self.revision, query, passage, self.max_length)
+            for query, passage in pairs
+        ]
         missing = sorted(
             {key: pair for key, pair in zip(keys, pairs, strict=True) if key not in self._scores}.items()
         )

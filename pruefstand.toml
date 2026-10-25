@@ -45,7 +45,8 @@ revision = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
 dir = ".cache/models/all-MiniLM-L6-v2"
 query_prefix = ""
 passage_prefix = ""
-max_seq_length = 256
+# 512 = the model's 512 position embeddings: the control reads the same text as e5 (256 cut most of every chunk)
+max_seq_length = 512
 files = ["config.json", "config_sentence_transformers.json", "model.safetensors", "modules.json",
          "sentence_bert_config.json", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json",
          "vocab.txt", "1_Pooling/config.json"]

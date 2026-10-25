@@ -8,17 +8,21 @@ from pruefstand.chunking import Chunk, chunks_path, load_chunks
 from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
 from pruefstand.errors import PruefstandError
-from pruefstand.io import read_jsonl, write_jsonl
-from pruefstand.metrics import gold_units_covered
+from pruefstand.io import read_jsonl, write_json, write_jsonl
+from pruefstand.metrics import gold_units_covered, ideal_gains, validate_gold
 from pruefstand.retrieval.bm25 import BM25Index
 from pruefstand.retrieval.cache import EmbeddingCache, RerankCache
-from pruefstand.retrieval.dense import DenseIndex
+from pruefstand.retrieval.dense import NORMALIZE, DenseIndex
 from pruefstand.retrieval.fusion import rrf
 from pruefstand.retrieval.rerank import rerank_order
 
 
 def hits_path(cfg: Config) -> Path:
     return cfg.run_dir / "hits.jsonl.gz"
+
+
+def meta_path(cfg: Config) -> Path:
+    return cfg.run_dir / "retrieval_meta.json"
 
 
 def config_ids(cfg: Config) -> list[str]:
@@ -94,19 +98,75 @@ class ModelHub:
     def score(self, pairs: list[tuple[str, str]]) -> list[float]:
         return self.scorer().score(pairs)
 
+    def token_counts(self, name: str, texts: list[str]) -> list[int] | None:
+        """Token counts incl. special tokens from the tokenizer.json next to the model, as the encoder sees them.
+
+        Returns None when the model is not downloaded (offline CI); needs no torch.
+        """
+        path = self.cfg.path(self.cfg["models"][name]["dir"]) / "tokenizer.json"
+        if not path.is_file():
+            return None
+        from tokenizers import Tokenizer
+
+        tokenizer = Tokenizer.from_file(str(path))
+        tokenizer.no_truncation()  # some tokenizer.json files carry a 128-token limit; we want the raw length
+        tokenizer.no_padding()
+        return [len(encoding.ids) for encoding in tokenizer.encode_batch(texts)]
+
 
 def open_caches(cfg: Config) -> dict:
     retrieval = cfg["retrieval"]
     cache_dir = cfg.path(retrieval["cache_dir"])
     allow = bool(retrieval["allow_compute"])
     models = cfg["models"]
+
+    def embeddings(name: str) -> EmbeddingCache:
+        model = models[name]
+        return EmbeddingCache(
+            cache_dir,
+            name,
+            model["id"],
+            model["revision"],
+            allow,
+            max_seq_length=model["max_seq_length"],
+            normalize=NORMALIZE,
+        )
+
+    reranker = models["reranker"]
     return {
-        "e5": EmbeddingCache(cache_dir, "e5", models["e5"]["id"], models["e5"]["revision"], allow),
-        "mini": EmbeddingCache(cache_dir, "mini", models["mini"]["id"], models["mini"]["revision"], allow),
+        "e5": embeddings("e5"),
+        "mini": embeddings("mini"),
         "reranker": RerankCache(
-            cache_dir, "reranker", models["reranker"]["id"], models["reranker"]["revision"], allow
+            cache_dir,
+            "reranker",
+            reranker["id"],
+            reranker["revision"],
+            allow,
+            max_length=reranker["max_length"],
         ),
     }
+
+
+def truncation_report(cfg: Config, chunks: list[Chunk], hub: ModelHub) -> dict:
+    """Per embedding model: how many chunk texts (with passage prefix) exceed max_seq_length and how much is seen."""
+    report: dict = {}
+    for name in ("e5", "mini"):
+        model = cfg["models"][name]
+        counts = hub.token_counts(name, [model["passage_prefix"] + chunk.text for chunk in chunks])
+        if counts is None:
+            report[name] = None
+            continue
+        limit = model["max_seq_length"]
+        n = len(counts)
+        report[name] = {
+            "max_seq_length": limit,
+            "n_chunks": n,
+            "n_truncated": sum(count > limit for count in counts),
+            "truncation_rate": round(sum(count > limit for count in counts) / n, 4) if n else 0.0,
+            "mean_tokens": round(sum(counts) / n, 2) if n else 0.0,
+            "mean_visible_share": round(sum(min(c, limit) / c for c in counts if c) / n, 4) if n else 0.0,
+        }
+    return report
 
 
 def build_indexes(cfg: Config, chunks: list[Chunk], caches: dict, hub: ModelHub) -> dict:
@@ -169,9 +229,22 @@ def retrieve_chunking(
             candidates[i][f"{base}+rr"] = rerank_order(docs, scores[position : position + len(docs)])
             position += len(docs)
 
+    chunks_by_unit: dict[str, list[int]] = {}
+    for index, chunk in enumerate(chunks):
+        for cover in chunk.covers:
+            chunks_by_unit.setdefault(cover["unit_id"], []).append(index)
+
     rows = []
     for i, question in enumerate(questions):
         gold = question["gold_unit_ids"]
+        validate_gold(gold, unit_lengths)
+        if question["answerable"] and not gold:
+            raise PruefstandError(f"{question['qid']}: an answerable question needs at least one gold unit")
+        # Ideal gains of this chunking for nDCG: greedy cover of the gold units by the chunks that overlap them.
+        overlapping = sorted({index for unit_id in gold for index in chunks_by_unit.get(unit_id, [])})
+        ideal = ideal_gains(
+            gold_units_covered(chunks[index].covers, gold, unit_lengths) for index in overlapping
+        )
         for retriever in retrieval["retrievers"]:
             ranked = candidates[i][retriever][:top]
             rows.append(
@@ -180,11 +253,13 @@ def retrieve_chunking(
                     "qid": question["qid"],
                     "type": question["type"],
                     "answerable": question["answerable"],
+                    "ideal_gains": ideal,
                     "ranked": [
                         {
                             "rank": rank,
                             "chunk_id": chunks[doc].chunk_id,
                             "score": score,
+                            "n_tokens": chunks[doc].n_tokens,
                             "gold_covered": gold_units_covered(chunks[doc].covers, gold, unit_lengths),
                         }
                         for rank, (doc, score) in enumerate(ranked, start=1)
@@ -202,9 +277,12 @@ def run_retrieval(cfg: Config, hub: ModelHub | None = None) -> int:
     unit_lengths = {unit.unit_id: len(unit.text) for unit in units}
     caches = open_caches(cfg)
     rows: list[dict] = []
+    truncation: dict = {}
     for chunking in cfg["retrieval"]["chunkings"]:
         chunks = load_chunks(chunks_path(cfg, chunking))
         rows.extend(retrieve_chunking(cfg, chunking, chunks, questions, unit_lengths, caches, hub))
+        truncation[chunking] = truncation_report(cfg, chunks, hub)
+    write_json(meta_path(cfg), {"truncation": truncation})
     for cache in caches.values():
         cache.prune_unused()
         cache.save()

@@ -28,5 +28,17 @@ class CrossEncoderScorer:
         self.batch_size = batch_size
 
     def score(self, pairs: list[tuple[str, str]]) -> list[float]:
-        values = self.model.predict(pairs, batch_size=self.batch_size, show_progress_bar=len(pairs) > 256)
+        """Raw logits (identity activation), not sigmoid probabilities.
+
+        The sigmoid squeezes unrelated pairs towards 0 so tightly that rounding to 6 decimals produced ties; the
+        logit is monotonic in the probability, so the ranking is the same, and keeps its resolution.
+        """
+        from torch import nn
+
+        values = self.model.predict(
+            pairs,
+            batch_size=self.batch_size,
+            show_progress_bar=len(pairs) > 256,
+            activation_fn=nn.Identity(),
+        )
         return [float(value) for value in values]
