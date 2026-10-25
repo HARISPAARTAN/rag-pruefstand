@@ -5,7 +5,7 @@ from __future__ import annotations
 import typer
 
 from pruefstand import __version__
-from pruefstand.commands import corpus
+from pruefstand.commands import corpus, retrieval
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, load
 
 app = typer.Typer(
@@ -27,5 +27,5 @@ def info(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_
     )
 
 
-for module in (corpus,):
+for module in (corpus, retrieval):
     module.register(app)
