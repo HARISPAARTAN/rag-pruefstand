@@ -1,6 +1,13 @@
 import pytest
 
-from pruefstand.citations import Citation, citation_precision, citation_recall, parse_citations, parse_unit_id
+from pruefstand.citations import (
+    Citation,
+    citation_precision,
+    citation_recall,
+    parse_citations,
+    parse_report,
+    parse_unit_id,
+)
 
 E = "enwg_2005"
 CASES = [
@@ -24,6 +31,29 @@ CASES = [
     ("[EnWG § 14a Abs. 1] und [EnWG § 14a Abs. 1]", [Citation(E, "§ 14a", "1")]),
     ("Siehe [EnWG § 1 Abs. 1] sowie § 2 Abs. 1 EnWG.", [Citation(E, "§ 1", "1"), Citation(E, "§ 2", "1")]),
     ("Keine Fundstelle, nur Text über Absatz 3.", []),
+    # lists, ranges and qualifier forms (Task 6 review I7)
+    ("[EnWG §§ 20, 21]", [Citation(E, "§ 20", None), Citation(E, "§ 21", None)]),
+    ("[EnWG § 12 Abs. 1 und 2]", [Citation(E, "§ 12", "1"), Citation(E, "§ 12", "2")]),
+    (
+        "[EnWG § 12 Abs. 1 bis 3]",
+        [Citation(E, "§ 12", "1"), Citation(E, "§ 12", "2"), Citation(E, "§ 12", "3")],
+    ),
+    (
+        "[EnWG § 12 Abs. 1, 2 und 4]",
+        [Citation(E, "§ 12", "1"), Citation(E, "§ 12", "2"), Citation(E, "§ 12", "4")],
+    ),
+    ("§ 14a Abs. 1 Satz 1 und 2 EnWG", [Citation(E, "§ 14a", "1")]),
+    ("§ 21 Absatz 1 Nummer 2 Buchstabe a EnWG", [Citation(E, "§ 21", "1")]),
+    ("§ 21 Abs. 1 Nr. 2 und 3 EnWG", [Citation(E, "§ 21", "1")]),
+    ("§ 3 Nr. 24a, § 14 EnWG", [Citation(E, "§ 3", None), Citation(E, "§ 14", None)]),
+    ("§ 14 und § 15 EnWG", [Citation(E, "§ 14", None), Citation(E, "§ 15", None)]),
+    (
+        "§ 14 Abs. 1 und Absatz 2 sowie § 15 EnWG",
+        [Citation(E, "§ 14", "1"), Citation(E, "§ 14", "2"), Citation(E, "§ 15", None)],
+    ),
+    ("§§ 20 bis 22 EnWG", [Citation(E, "§ 20", None), Citation(E, "§ 21", None), Citation(E, "§ 22", None)]),
+    ("[EnWG § 14a Abs. 1; § 14b]", [Citation(E, "§ 14a", "1"), Citation(E, "§ 14b", None)]),
+    ("[§ 14a Abs. 1 EnWG]", [Citation(E, "§ 14a", "1")]),
 ]
 
 
@@ -44,3 +74,18 @@ def test_precision_and_recall():
     assert citation_precision([], context) is None
     assert citation_recall(cites, ["enwg_2005:§14a:abs1", "enwg_2005:§14a:abs2"]) == 0.5
     assert citation_recall(cites, []) is None
+
+
+def test_unparsed_mentions_are_counted_as_a_diagnostic():
+    clean = parse_report("Siehe [EnWG § 1 Abs. 1] sowie § 2 Abs. 1 EnWG.")
+    assert (clean.mentions, clean.unparsed) == (2, 0)
+    bare = parse_report("Nach § 99 gilt etwas anderes, vgl. [EnWG § 5 Abs. 1].")
+    assert bare.citations == [Citation(E, "§ 5", "1")]
+    assert (bare.mentions, bare.unparsed) == (2, 1)
+    unknown_law = parse_report("[BGB § 433 Abs. 1]")
+    assert unknown_law.citations == [] and (unknown_law.mentions, unknown_law.unparsed) == (1, 1)
+    assert parse_report("Kein Paragraphenzeichen.") == parse_report("Kein Paragraphenzeichen.")
+    assert parse_report("Kein Paragraphenzeichen.").mentions == 0
+    assert parse_report("Kein Paragraphenzeichen.").unparsed == 0
+    mixed = parse_report("§§ 20, 21 EnWG und § 7 des Bürgerlichen Gesetzbuchs")
+    assert len(mixed.citations) == 2 and (mixed.mentions, mixed.unparsed) == (2, 1)

@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 
 from pruefstand.cli import app
 from pruefstand.config import load_config
-from pruefstand.io import read_json, write_json
+from pruefstand.io import read_json, read_jsonl, write_json
 
 PROFILE = "ci"
 GOLDEN = {"metrics.json": "ci_metrics.json", "answer_metrics.json": "ci_answer_metrics.json"}
@@ -38,6 +38,14 @@ def test_ci_profile_runs_offline_and_matches_golden(root, monkeypatch, no_networ
             write_json(golden_path, data)
         assert data == read_json(golden_path), f"{produced} differs from {golden_path.name}"
     assert read_json(cfg.run_dir / "manifest.json")["stages"][-1] == "answer metrics"
+    # replay: recorded cost (cassette) and recomputed cost (costs.toml) are reported apart and agree here
+    answers = read_jsonl(cfg.run_dir / "answers.jsonl")
+    judgements = read_jsonl(cfg.run_dir / "judgements.jsonl")
+    assert all(row["recorded_cost_usd"] == pytest.approx(row["cost_usd"]) for row in answers + judgements)
+    assert not any(row["billed_now"] for row in answers + judgements)
+    assert all(row["status"] == "ok" for row in judgements)
+    assert read_json(cfg.run_dir / "manifest.json")["spend_usd"] == 0
+    assert not (cfg.run_dir / "spend.json").exists() and not (cfg.run_dir / "batch_judge.json").exists()
 
 
 @pytest.mark.integration

@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from pruefstand.chunking import Chunk
-from pruefstand.citations import citation_precision, citation_recall, parse_citations
+from pruefstand.citations import citation_precision, citation_recall, parse_report
 from pruefstand.corpus.gii import Unit
-from pruefstand.llm.base import LLMRequest, LLMResponse, or_none
+from pruefstand.llm.base import LLMRequest, LLMResponse, or_none, role_options
 from pruefstand.prompts import Prompt
 from pruefstand.questions.schema import ABSTAIN_ANSWER, normalise_ws
 
@@ -32,6 +32,7 @@ def build_answer_request(
     prompt: Prompt,
     role: Mapping,
     tag: str,
+    stage: str = "answer",
 ) -> LLMRequest:
     user = f"Kontext:\n{build_context(chunks, units_by_id)}\n\nFrage: {question['question_de']}"
     return LLMRequest(
@@ -44,6 +45,8 @@ def build_answer_request(
         thinking=or_none(role.get("thinking")),
         prompt_id=prompt.prompt_id,
         prompt_sha256=prompt.sha256,
+        stage=stage,
+        options=role_options(dict(role)),
         tag=tag,
     )
 
@@ -55,7 +58,8 @@ def is_abstention(text: str) -> bool:
 def answer_record(
     question: Mapping, config_id: str, chunks: list[Chunk], response: LLMResponse, cost: float, generator: str
 ) -> dict:
-    citations = parse_citations(response.text)
+    report = parse_report(response.text)
+    citations = report.citations
     context_units = [cover["unit_id"] for chunk in chunks for cover in chunk.covers]
     return {
         "config_id": config_id,
@@ -66,6 +70,8 @@ def answer_record(
         "citations": [f"{c.law_slug}|{c.norm}|{c.absatz or ''}" for c in citations],
         "citation_precision": citation_precision(citations, context_units),
         "citation_recall": citation_recall(citations, question["gold_unit_ids"]),
+        "paragraph_mentions": report.mentions,
+        "unparsed_mentions": report.unparsed,
         "abstained": is_abstention(response.text),
         "stop_reason": response.stop_reason,
         "usage": {

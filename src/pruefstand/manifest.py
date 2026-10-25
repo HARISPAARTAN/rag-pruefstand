@@ -52,7 +52,12 @@ def package_versions() -> dict[str, str]:
 
 def write_manifest(cfg: Config, started_at: str, stages: list[str], spend_usd: float = 0.0) -> dict:
     snapshot = read_json(cfg.path(cfg["corpus"]["snapshot_path"]))
-    prompt_paths = {cfg["llm"][role]["prompt"] for role in LLM_ROLES}
+    prompt_paths = {
+        cfg["llm"][role][key]
+        for role in LLM_ROLES
+        for key in ("prompt", "faithfulness_prompt")
+        if key in cfg["llm"][role]
+    }
     prompts = {}
     for path in sorted(prompt_paths):
         if cfg.path(path).exists():

@@ -21,26 +21,52 @@ below that. The Message Batches API costs 50% of these prices. EUR figures use t
 
 ## Projection of one full live run
 
+Projection of the planned v0.2.0 run, not a measurement. The judge now makes two calls per answer (faithfulness without
+the gold answer, correctness without the context; see `docs/rubric.md`), so it appears twice.
+
 | Stage | Model | Calls | Tokens in / out per call | Mode | USD |
 |---|---|---|---|---|---|
 | Answers, 4 configurations | claude-haiku-5-5 | 960 | 4,000 / 400 | online | 0.58 |
 | Prompt ablation | claude-haiku-5-5 | 240 | 4,000 / 400 | online | 0.14 |
 | Repeats (50 × 3 × 2) | claude-haiku-5-5 | 300 | 4,000 / 400 | online | 0.18 |
 | Local generator | qwen3:4b | 100 | 4,000 / 400 | local | 0.00 |
-| Judge | claude-sonnet-5-5 | 1,600 | 5,000 / 800 | batch | 14.40 |
-| Second judge | claude-opus-5-5 | 100 | 5,000 / 800 | batch | 1.80 |
-| Total | | | | | 17.10 (EUR 15.28) |
+| Judge: faithfulness (context only) | claude-sonnet-5-5 | 1,600 | 4,500 / 700 | batch | 12.80 |
+| Judge: correctness (with gold answer) | claude-sonnet-5-5 | 1,600 | 1,500 / 800 | batch | 8.80 |
+| Second judge: faithfulness | claude-opus-5-5 | 100 | 4,500 / 700 | batch | 1.60 |
+| Second judge: correctness | claude-opus-5-5 | 100 | 1,500 / 800 | batch | 1.10 |
+| Total | | | | | 25.20 (EUR 22.51) |
 
-Token counts per call are estimates (±50%); thinking tokens are billed as output. The question set costs nothing here:
-it was written by the implementing agent, not by API calls.
+Token counts per call are estimates (±50%); thinking tokens are billed as output. The measured context at k = 5 is about
+850 to 1,750 e5 tokens plus the prompt, so the input figures are on the conservative side; judge output with thinking is
+the unknown that matters (every 100 extra output tokens per judge call adds about USD 1.6 over 3,200 calls). The question
+set costs nothing here: it was written by the implementing agent, not by API calls.
 
 ## Guards
 
-- `[budget] max_usd_per_run = 30`: before the first call of a stage the projected cost is checked against the cap, and
-  the run stops as soon as measured spend passes it (`BudgetExceeded`, exit code 1).
-- Spend is computed from the usage the API returns (input, output, cache read and cache write tokens) and stored per
-  answer and judgement (`cost_usd`) and per run (`manifest.json`, `spend_usd`).
+- `[budget] max_usd_per_run = 30`. Before anything is sent, a stage computes a hard upper bound for the requests that would
+  reach the provider (not those already in the cassette): an input bound at 2.5 characters per token plus `max_tokens`
+  of output per request, times the Batch discount where it applies. If the bound plus what the run already spent passes
+  the cap, the stage stops with `BudgetExceeded` (exit code 1) before the first call or submit. Output cannot exceed
+  `max_tokens` (thinking tokens count inside it), so the bound holds unless the input bound is wrong.
+- The judge stage is bounded this way as a whole: with `max_tokens = 1000` the worst case for the 960 headline answers is
+  USD 16.2 (computed from the real requests with answers of 2,400 characters), for all 1,600 planned judged answers
+  about USD 27.0, below the cap; at the old 4,000 it would have been USD 45 for 960 answers. A verdict that needs more
+  than 1,000 tokens is recorded as `invalid`, never silently retried.
+- One cap per run: each live stage writes what it spent to `runs/<id>/spend.json`, and the other stages count it.
+- Measured spend is computed from the usage the API returns (input, output, cache read and cache write tokens), stored per
+  answer and judgement (`cost_usd`) and per run (`manifest.json`, `spend_usd`, only for calls billed in that run).
+- Every cassette entry stores the cost at record time, the price table date, a timestamp, the SDK version and the Batch
+  id. A replay reports `cost_usd` (recomputed with the current `costs.toml`) and `recorded_cost_usd` (as stored) apart,
+  so a later price edit cannot silently rewrite history.
 - The Anthropic Console spend limit set by the owner is the hard stop outside this code.
+
+## Resuming after a failure
+
+Record mode reads the cassette first and only pays for requests that are not stored, so a crashed run costs nothing
+twice (`--refresh` forces new calls). The judge Batch id and the request keys are written to `runs/<id>/batch_judge.json`
+before the wait starts; running the same command again picks the batch up instead of submitting it again. The wait has a
+maximum (26 hours); errored, expired or canceled items are retried once in a second batch and, if they still fail, are
+reported with their error and left out of the cassette.
 
 ## Actual spend
 

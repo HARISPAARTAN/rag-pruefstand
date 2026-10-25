@@ -112,9 +112,12 @@ max_questions = 0  # 0 = all questions
 [llm]
 mode = "replay"  # record | replay | live; PRUEFSTAND_LLM_MODE overrides
 run_in_all = false
-cassette = "fixtures/llm/cassette.jsonl"
+# One cassette file per profile: the ci profile replays hand-written synthetic entries, the full profile only
+# holds live recordings (synthetic entries are refused there), so a live run can never overwrite CI fixtures.
+cassette = "cassettes/full-2026-10-25.jsonl"
 costs = "costs.toml"
 batch_poll_seconds = 60
+batch_max_wait_seconds = 93600  # 26 h; a Batch ends within 24 h, a timeout can be resumed by running again
 
 [llm.generator]
 provider = "anthropic"
@@ -133,11 +136,16 @@ max_tokens = 600
 effort = "low"
 thinking = "disabled"
 
+# Two calls per answer (rubric judge_v2): faithfulness sees question, context and answer but never the gold
+# answer (faithfulness_prompt); correctness and completeness see question, gold answer and answer, no context
+# (prompt). max_tokens is a hard output bound that includes thinking tokens; docs/cost-model.md shows why this
+# value keeps the whole judge stage under the budget cap even in the worst case.
 [llm.judge]
 provider = "anthropic"
 model = "claude-sonnet-5-5"
-prompt = "prompts/judge_v1.md"
-max_tokens = 4000
+prompt = "prompts/judge_correctness_v2.md"
+faithfulness_prompt = "prompts/judge_faithfulness_v2.md"
+max_tokens = 1000
 effort = "low"
 thinking = "adaptive"
 batch = true
@@ -145,8 +153,9 @@ batch = true
 [llm.second_judge]
 provider = "anthropic"
 model = "claude-opus-5-5"
-prompt = "prompts/judge_v1.md"
-max_tokens = 4000
+prompt = "prompts/judge_correctness_v2.md"
+faithfulness_prompt = "prompts/judge_faithfulness_v2.md"
+max_tokens = 1000
 effort = "low"
 thinking = ""
 batch = true
@@ -158,6 +167,10 @@ prompt = "prompts/answer_v1_de.md"
 max_tokens = 600
 effort = ""
 thinking = "disabled"
+# Sent with every request (and part of the replay key); the prompt must fit num_ctx or the call fails.
+num_ctx = 16384
+temperature = 0
+seed = 20261025
 
 [budget]
 max_usd_per_run = 30.0
@@ -192,17 +205,31 @@ input_tokens = 4000
 output_tokens = 400
 batch = false
 [[cost.stage]]
-name = "judge"
+name = "judge: faithfulness"
 role = "judge"
 calls = 1600
-input_tokens = 5000
+input_tokens = 4500
+output_tokens = 700
+batch = true
+[[cost.stage]]
+name = "judge: correctness"
+role = "judge"
+calls = 1600
+input_tokens = 1500
 output_tokens = 800
 batch = true
 [[cost.stage]]
-name = "second judge"
+name = "second judge: faithfulness"
 role = "second_judge"
 calls = 100
-input_tokens = 5000
+input_tokens = 4500
+output_tokens = 700
+batch = true
+[[cost.stage]]
+name = "second judge: correctness"
+role = "second_judge"
+calls = 100
+input_tokens = 1500
 output_tokens = 800
 batch = true
 
@@ -228,7 +255,7 @@ generation.variants = ["bm25-C1", "hyb+rr-C2"]
 generation.max_questions = 8
 llm.mode = "replay"
 llm.run_in_all = true
-llm.cassette = "fixtures/llm/cassette.jsonl"
+llm.cassette = "fixtures/llm/synthetic_cassette.jsonl"
 paths.run_id = "ci"
 paths.reports_dir = "runs/ci/report"
 paths.site_dir = "runs/ci/site"

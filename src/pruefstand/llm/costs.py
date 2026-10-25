@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+import json
+import math
 import tomllib
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
 from pruefstand.errors import PruefstandError
-from pruefstand.llm.base import Usage
+from pruefstand.llm.base import LLMRequest, Usage
 
 PER_MILLION = 1_000_000
+# Upper bound for input tokens without a tokenizer: German legal text runs at about 3 to 4 characters per token,
+# so 2.5 never undercounts; a JSON schema adds a fixed overhead to the prompt.
+MIN_CHARS_PER_TOKEN = 2.5
+SCHEMA_OVERHEAD_TOKENS = 400
 
 
 class BudgetExceeded(PruefstandError):
@@ -60,6 +67,30 @@ def cost_usd(usage: Usage, price: Price, batch: bool = False, batch_discount: fl
     if batch:
         total *= 1 - batch_discount
     return round(total, 8)
+
+
+def input_tokens_upper_bound(request: LLMRequest) -> int:
+    chars = len(request.system) + sum(len(content) for _, content in request.messages)
+    overhead = 0
+    if request.response_schema:
+        overhead = SCHEMA_OVERHEAD_TOKENS + len(json.dumps(request.response_schema)) // 2
+    return math.ceil(chars / MIN_CHARS_PER_TOKEN) + overhead
+
+
+def worst_case_usd(
+    requests: Iterable[LLMRequest], price: Price, batch: bool = False, batch_discount: float = 0.5
+) -> float:
+    """Hard upper bound of a stage: every request at its full input bound and at max_tokens of output.
+
+    Output can never exceed max_tokens (thinking tokens count inside it), so the real spend of the stage cannot
+    pass this figure unless the input bound is wrong. The bound is checked before anything is submitted.
+    """
+    items = list(requests)
+    usage = Usage(
+        input_tokens=sum(input_tokens_upper_bound(request) for request in items),
+        output_tokens=sum(request.max_tokens for request in items),
+    )
+    return cost_usd(usage, price, batch=batch, batch_discount=batch_discount)
 
 
 @dataclass(frozen=True)

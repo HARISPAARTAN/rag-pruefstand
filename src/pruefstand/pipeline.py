@@ -48,20 +48,26 @@ def stage_metrics(cfg: Config) -> dict:
     return compute_retrieval_metrics(cfg)
 
 
-def stage_generate(cfg: Config) -> list[dict]:
-    from pruefstand.generation import make_client, run_generation
-    from pruefstand.llm.costs import BudgetGuard
+def stage_generate(cfg: Config, refresh: bool = False) -> list[dict]:
+    from pruefstand.generation import make_client, run_generation, save_stage_spend, stage_guard
 
-    return run_generation(
-        cfg, make_client(cfg, "generator"), BudgetGuard(float(cfg["budget"]["max_usd_per_run"]))
-    )
+    guard = stage_guard(cfg, "generate")
+    before = guard.spent
+    try:
+        return run_generation(cfg, make_client(cfg, "generator", refresh), guard)
+    finally:
+        save_stage_spend(cfg, "generate", guard, before)
 
 
-def stage_judge(cfg: Config) -> list[dict]:
-    from pruefstand.generation import make_client, run_judging
-    from pruefstand.llm.costs import BudgetGuard
+def stage_judge(cfg: Config, refresh: bool = False) -> list[dict]:
+    from pruefstand.generation import make_client, run_judging, save_stage_spend, stage_guard
 
-    return run_judging(cfg, make_client(cfg, "judge"), BudgetGuard(float(cfg["budget"]["max_usd_per_run"])))
+    guard = stage_guard(cfg, "judge")
+    before = guard.spent
+    try:
+        return run_judging(cfg, make_client(cfg, "judge", refresh), guard)
+    finally:
+        save_stage_spend(cfg, "judge", guard, before)
 
 
 def stage_answer_metrics(cfg: Config) -> dict:
@@ -96,8 +102,8 @@ def run_all(cfg: Config, echo: Callable[[str], None] = print) -> list[str]:
         echo(f"[{cfg.profile}] {name} ...")
         result = stage(cfg)
         if name in ("generate", "judge"):
-            spend += sum(record["cost_usd"] for record in result)
+            spend += sum(record["cost_usd"] for record in result if record.get("billed_now"))
         done.append(name)
-    # Replayed calls cost nothing; their recorded cost stays in answers.jsonl and judgements.jsonl.
-    write_manifest(cfg, started, done, spend_usd=0.0 if cfg.llm_mode() == "replay" else spend)
+    # Replayed and reused calls cost nothing now; their cost stays in answers.jsonl and judgements.jsonl.
+    write_manifest(cfg, started, done, spend_usd=spend)
     return done

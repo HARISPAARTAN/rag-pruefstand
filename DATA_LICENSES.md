@@ -63,5 +63,5 @@ count tokens for chunking.
 
 ## LLM fixtures
 
-`fixtures/llm/synthetic_responses.json` and `fixtures/llm/cassette.jsonl` are hand-written synthetic fixtures (MIT, like
+`fixtures/llm/synthetic_responses.json` and `fixtures/llm/synthetic_cassette.jsonl` are hand-written synthetic fixtures (MIT, like
 the code). They are not model output and no reported number comes from them.

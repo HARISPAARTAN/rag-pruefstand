@@ -1,9 +1,10 @@
 {
+  "cost_note": "usd_per_1000 is recomputed from the usage with the current costs.toml; recorded_usd_per_1000 is the cost stored in the cassette at record time.",
   "eur_per_usd": 0.8934,
   "generator": "claude-haiku-5-5",
   "judge": "claude-sonnet-5-5",
   "prices_as_of": "2026-10-06",
-  "rubric_version": "judge_v1",
+  "rubric_version": "judge_v2",
   "run_id": "ci",
   "synthetic": true,
   "variants": {
@@ -14,6 +15,7 @@
         "mean": 0.75,
         "n": 8
       },
+      "answers_with_unparsed_mentions": 1,
       "citation_precision": {
         "hi": 1.0,
         "lo": 1.0,
@@ -51,9 +53,10 @@
         "mean": 1.375,
         "n": 8
       },
+      "judge_failed": 0,
       "judge_invalid": 0,
       "judge_refusals": 0,
-      "judge_usd_per_1000": 5.8012,
+      "judge_usd_per_1000": 6.9576,
       "latency_ms": {
         "p50": 1072.5,
         "p95": 1381.5
@@ -61,7 +64,10 @@
       "mean_input_tokens": 3638.1,
       "mean_output_tokens": 51.1,
       "n_answers": 8,
+      "paragraph_mentions": 8,
+      "recorded_usd_per_1000": 0.3894,
       "refusals": 0,
+      "unparsed_mentions": 1,
       "usd_per_1000": 0.3894
     },
     "hyb+rr-C2": {
@@ -71,6 +77,7 @@
         "mean": 1.0,
         "n": 8
       },
+      "answers_with_unparsed_mentions": 0,
       "citation_precision": {
         "hi": 1.0,
         "lo": 1.0,
@@ -108,9 +115,10 @@
         "mean": 1.875,
         "n": 8
       },
+      "judge_failed": 0,
       "judge_invalid": 0,
       "judge_refusals": 0,
-      "judge_usd_per_1000": 5.0587,
+      "judge_usd_per_1000": 6.0998,
       "latency_ms": {
         "p50": 942.5,
         "p95": 1321.5
@@ -118,7 +126,10 @@
       "mean_input_tokens": 3103.1,
       "mean_output_tokens": 47.0,
       "n_answers": 8,
+      "paragraph_mentions": 7,
+      "recorded_usd_per_1000": 0.3338,
       "refusals": 0,
+      "unparsed_mentions": 0,
       "usd_per_1000": 0.3338
     }
   }

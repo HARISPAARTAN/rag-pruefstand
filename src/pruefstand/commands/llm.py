@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -11,7 +12,13 @@ from pruefstand.answer import build_context
 from pruefstand.bench import hits_path
 from pruefstand.commands.common import DEFAULT_CONFIG_PATH, ConfigOption, ProfileOption, guarded, load
 from pruefstand.corpus.gii import load_units
-from pruefstand.generation import chunk_lookup, run_generation, run_judging, selected_questions
+from pruefstand.generation import (
+    chunk_lookup,
+    cost_function,
+    run_generation,
+    run_judging,
+    selected_questions,
+)
 from pruefstand.io import read_jsonl
 from pruefstand.llm.costs import BudgetGuard, load_prices, project_stages
 from pruefstand.llm.replay import Cassette, ReplayClient
@@ -21,6 +28,9 @@ from pruefstand.pipeline import stage_answer_metrics, stage_generate, stage_judg
 cost_app = typer.Typer(no_args_is_help=True, help="Projected API spend (dry run, no calls).")
 llm_app = typer.Typer(no_args_is_help=True, help="Synthetic CI cassette for the replay path.")
 SYNTHETIC = Path("fixtures/llm/synthetic_responses.json")
+RefreshOption = Annotated[
+    bool, typer.Option("--refresh", help="Record mode: call the provider again even for stored requests.")
+]
 
 
 @cost_app.command("estimate")
@@ -32,29 +42,37 @@ def estimate(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CON
     total = 0.0
     for p in projections:
         mode = "batch" if p.batch else "online"
-        typer.echo(f"{p.name:24s} {p.model:20s} {p.calls:6d} calls {mode:6s} USD {p.usd:8.2f}")
+        typer.echo(f"{p.name:27s} {p.model:20s} {p.calls:6d} calls {mode:6s} USD {p.usd:8.2f}")
         total += p.usd
     cap = float(cfg["budget"]["max_usd_per_run"])
-    typer.echo(f"{'total':24s} USD {total:.2f} (EUR {total * table.eur_per_usd:.2f}); cap USD {cap:.2f}")
+    typer.echo(f"{'total':27s} USD {total:.2f} (EUR {total * table.eur_per_usd:.2f}); cap USD {cap:.2f}")
     typer.echo(f"prices as of {table.meta['as_of']} ({table.meta['source']})")
     if total > cap:
         typer.echo("projection exceeds the cap", err=True)
         raise typer.Exit(code=1)
 
 
-def generate(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
+def generate(
+    profile: ProfileOption = "full",
+    config: ConfigOption = DEFAULT_CONFIG_PATH,
+    refresh: RefreshOption = False,
+) -> None:
     """Generate answers (PRUEFSTAND_LLM_MODE=record for a live run; default replay)."""
     cfg = load(profile, config)
     with guarded():
-        records = stage_generate(cfg)
+        records = stage_generate(cfg, refresh)
     typer.echo(f"{len(records)} answers, USD {sum(r['cost_usd'] for r in records):.4f} ({cfg.llm_mode()})")
 
 
-def judge(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
+def judge(
+    profile: ProfileOption = "full",
+    config: ConfigOption = DEFAULT_CONFIG_PATH,
+    refresh: RefreshOption = False,
+) -> None:
     """Judge the answers (Batch API in a live run) and compute answer metrics."""
     cfg = load(profile, config)
     with guarded():
-        judgements = stage_judge(cfg)
+        judgements = stage_judge(cfg, refresh)
         stage_answer_metrics(cfg)
     typer.echo(
         f"{len(judgements)} judgements, USD {sum(j['cost_usd'] for j in judgements):.4f} ({cfg.llm_mode()})"
@@ -63,7 +81,7 @@ def judge(profile: ProfileOption = "full", config: ConfigOption = DEFAULT_CONFIG
 
 @llm_app.command("synthetic-template")
 def synthetic_template(profile: ProfileOption = "ci", config: ConfigOption = DEFAULT_CONFIG_PATH) -> None:
-    """Write fixtures/llm/synthetic_responses.json with one empty answer and judgement per CI request."""
+    """Write fixtures/llm/synthetic_responses.json with one empty answer and judgement per CI answer."""
     cfg = load(profile, config)
     units_by_id = {unit.unit_id: unit for unit in load_units(cfg.path(cfg["corpus"]["units_path"]))}
     hits = {(row["config_id"], row["qid"]): row for row in read_jsonl(hits_path(cfg))}
@@ -110,8 +128,20 @@ def record_synthetic(profile: ProfileOption = "ci", config: ConfigOption = DEFAU
     """Record the synthetic responses into the cassette (marked synthetic) via the normal record path."""
     cfg = load(profile, config)
     responses = json.loads(cfg.path(SYNTHETIC).read_text(encoding="utf-8"))
+    if cfg.profile != "ci":
+        typer.echo("Fehler: the synthetic cassette is only recorded for the ci profile", err=True)
+        raise typer.Exit(code=1)
+    table = load_prices(cfg.path(cfg["llm"]["costs"]))
     cassette = Cassette(cfg.path(cfg["llm"]["cassette"]))
-    client = ReplayClient("record", cassette, SyntheticClient(responses), synthetic=True)
+    cassette.entries.clear()
+    client = ReplayClient(
+        "record",
+        cassette,
+        SyntheticClient(responses),
+        synthetic=True,
+        cost_fn=cost_function(table),
+        price_as_of=str(table.meta["as_of"]),
+    )
     guard = BudgetGuard(float(cfg["budget"]["max_usd_per_run"]))
     with guarded():
         run_generation(cfg, client, guard)
