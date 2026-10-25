@@ -1,0 +1,125 @@
+{
+  "eur_per_usd": 0.8934,
+  "generator": "claude-haiku-5-5",
+  "judge": "claude-sonnet-5-5",
+  "prices_as_of": "2026-10-06",
+  "rubric_version": "judge_v1",
+  "run_id": "ci",
+  "synthetic": true,
+  "variants": {
+    "bm25-C1": {
+      "abstention_accuracy": {
+        "hi": 1.0,
+        "lo": 0.375,
+        "mean": 0.75,
+        "n": 8
+      },
+      "citation_precision": {
+        "hi": 1.0,
+        "lo": 1.0,
+        "mean": 1.0,
+        "n": 7
+      },
+      "citation_recall": {
+        "hi": 0.571429,
+        "lo": 0.0,
+        "mean": 0.285714,
+        "n": 7
+      },
+      "completeness": {
+        "hi": 0.875,
+        "lo": 0.125,
+        "mean": 0.5,
+        "n": 8
+      },
+      "correctness": {
+        "hi": 1.625,
+        "lo": 0.625,
+        "mean": 1.125,
+        "n": 8
+      },
+      "correctness_share_2": {
+        "hi": 0.75,
+        "lo": 0.125,
+        "mean": 0.375,
+        "n": 8
+      },
+      "eur_per_1000": 0.3479,
+      "faithfulness": {
+        "hi": 1.875,
+        "lo": 0.75,
+        "mean": 1.375,
+        "n": 8
+      },
+      "judge_invalid": 0,
+      "judge_refusals": 0,
+      "judge_usd_per_1000": 5.8012,
+      "latency_ms": {
+        "p50": 1072.5,
+        "p95": 1381.5
+      },
+      "mean_input_tokens": 3638.1,
+      "mean_output_tokens": 51.1,
+      "n_answers": 8,
+      "refusals": 0,
+      "usd_per_1000": 0.3894
+    },
+    "hyb+rr-C2": {
+      "abstention_accuracy": {
+        "hi": 1.0,
+        "lo": 1.0,
+        "mean": 1.0,
+        "n": 8
+      },
+      "citation_precision": {
+        "hi": 1.0,
+        "lo": 1.0,
+        "mean": 1.0,
+        "n": 7
+      },
+      "citation_recall": {
+        "hi": 1.0,
+        "lo": 0.571429,
+        "mean": 0.857143,
+        "n": 7
+      },
+      "completeness": {
+        "hi": 1.0,
+        "lo": 0.625,
+        "mean": 0.875,
+        "n": 8
+      },
+      "correctness": {
+        "hi": 2.0,
+        "lo": 1.25,
+        "mean": 1.75,
+        "n": 8
+      },
+      "correctness_share_2": {
+        "hi": 1.0,
+        "lo": 0.625,
+        "mean": 0.875,
+        "n": 8
+      },
+      "eur_per_1000": 0.2982,
+      "faithfulness": {
+        "hi": 2.0,
+        "lo": 1.625,
+        "mean": 1.875,
+        "n": 8
+      },
+      "judge_invalid": 0,
+      "judge_refusals": 0,
+      "judge_usd_per_1000": 5.0587,
+      "latency_ms": {
+        "p50": 942.5,
+        "p95": 1321.5
+      },
+      "mean_input_tokens": 3103.1,
+      "mean_output_tokens": 47.0,
+      "n_answers": 8,
+      "refusals": 0,
+      "usd_per_1000": 0.3338
+    }
+  }
+}

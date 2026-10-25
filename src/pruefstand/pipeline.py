@@ -48,6 +48,28 @@ def stage_metrics(cfg: Config) -> dict:
     return compute_retrieval_metrics(cfg)
 
 
+def stage_generate(cfg: Config) -> list[dict]:
+    from pruefstand.generation import make_client, run_generation
+    from pruefstand.llm.costs import BudgetGuard
+
+    return run_generation(
+        cfg, make_client(cfg, "generator"), BudgetGuard(float(cfg["budget"]["max_usd_per_run"]))
+    )
+
+
+def stage_judge(cfg: Config) -> list[dict]:
+    from pruefstand.generation import make_client, run_judging
+    from pruefstand.llm.costs import BudgetGuard
+
+    return run_judging(cfg, make_client(cfg, "judge"), BudgetGuard(float(cfg["budget"]["max_usd_per_run"])))
+
+
+def stage_answer_metrics(cfg: Config) -> dict:
+    from pruefstand.generation import compute_answer_metrics
+
+    return compute_answer_metrics(cfg)
+
+
 def planned_stages(cfg: Config) -> list[tuple[str, Callable[[Config], object]]]:
     stages: list[tuple[str, Callable[[Config], object]]] = [
         ("corpus build", stage_corpus_build),
@@ -57,6 +79,12 @@ def planned_stages(cfg: Config) -> list[tuple[str, Callable[[Config], object]]]:
     if int(cfg["latency"]["sample"]) > 0:
         stages.append(("latency", stage_latency))
     stages.append(("metrics", stage_metrics))
+    if cfg["llm"]["run_in_all"]:
+        stages += [
+            ("generate", stage_generate),
+            ("judge", stage_judge),
+            ("answer metrics", stage_answer_metrics),
+        ]
     return stages
 
 

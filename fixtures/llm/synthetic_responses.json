@@ -1,0 +1,295 @@
+{
+  "note": "SYNTHETIC: hand-written by the implementing agent, not model output. CI replay fixture only.",
+  "answers": {
+    "bm25-C1|k1v1-0211": {
+      "question_de": "Wer muss genehmigen, dass ein Unternehmen die Grundzuständigkeit für den Messstellenbetrieb aufnimmt?",
+      "gold_answer_de": "Die Bundesnetzagentur muss die Aufnahme der Grundzuständigkeit genehmigen.",
+      "context_preview": "[1] Fundstellen: MsbG § 41 Abs. 1, MsbG § 41 Abs. 2, MsbG § 41 Abs. 3, MsbG § 42, MsbG § 43 Abs. 1\nbetreiber können die Grundzuständigkeit für den Messstellenbetrieb von modernen Messeinrichtungen und intelligenten Messsystemen in ihrem Netzgebiet auf ein anderes Unternehmen übertragen, das über eine nach § 4 erforderliche Genehmigung und ein nach § 25 erforderliches Zertifikat verfügt. Grundzuständige Messstellenbetreiber können auch untereinander Kooperationen zur gemeinsamen Erfüllung der Pflichten des grundzuständigen Messstellenbetreibers eingehen.\n(2) Teil 4 des Gesetzes gegen Wettbewerb",
+      "text": "Die Grundzuständigkeit kann auf ein anderes Unternehmen übertragen werden, das über eine nach § 4 erforderliche Genehmigung verfügt [MsbG § 41 Abs. 1]. Wer die Genehmigung erteilt, nennt der Auszug nicht.",
+      "input_tokens": 3820,
+      "output_tokens": 61,
+      "latency_ms": 1310,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0212": {
+      "question_de": "Muss ich als Hauseigentümer dem grundzuständigen Messstellenbetreiber Zutritt zu meinen Räumen gewähren?",
+      "gold_answer_de": "Ja, nach vorheriger schriftlicher Benachrichtigung muss der Zutritt gestattet werden, soweit er für die Aufgabenerfüllung des grundzuständigen Messstellenbetreibers erforderlich ist.",
+      "context_preview": "[1] Fundstellen: MsbG § 38, MsbG § 39 Abs. 1, MsbG § 39 Abs. 2, MsbG § 40, MsbG § 41 Abs. 1\nrichtigung dem grundzuständigen Messstellenbetreiber und seinem mit einem Ausweis versehenen Beauftragten den Zutritt zu ihrem Grundstück und zu ihren Räumen zu gestatten, soweit dies für die Aufgabenerfüllung des grundzuständigen Messstellenbetreibers erforderlich ist; für nach den §§ 5 oder 6 beauftragte Dritte gelten die individuellen vertraglichen Vereinbarungen. Die Benachrichtigung kann durch Mitteilung an die jeweiligen Anschlussnutzer oder durch Aushang am oder im jeweiligen Haus erfolgen. Sie m",
+      "text": "Ja, nach vorheriger schriftlicher Benachrichtigung ist dem grundzuständigen Messstellenbetreiber der Zutritt zu Grundstück und Räumen zu gestatten, soweit das für seine Aufgabenerfüllung erforderlich ist [MsbG § 38].",
+      "input_tokens": 3655,
+      "output_tokens": 58,
+      "latency_ms": 1180,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0213": {
+      "question_de": "Was gilt für den Messstellenvertrag, wenn der Stromlieferant die Messstellenregelungen schon in seinen Liefervertrag aufgenommen hat?",
+      "gold_answer_de": "Bei einem solchen kombinierten Vertrag ist kein separater Messstellenvertrag mit dem Anschlussnutzer oder Anschlussnehmer mehr nötig.",
+      "context_preview": "[1] Fundstellen: MsbG § 31 Abs. 1, MsbG § 31 Abs. 2, MsbG § 32 Abs. 1, MsbG § 32 Abs. 2, MsbG § 33 Abs. 1\npunkten mit einem Jahresstromverbrauch bis einschließlich 100 000 Kilowattstunden und bei Messstellen an Zählpunkten von Anlagen mit einer installierten Leistung bis einschließlich 25 Kilowatt auch mit intelligenten Messsystemen beginnen, bei denen eine oder mehrere der folgenden Anwendungen jeweils nicht schon zum Zeitpunkt des Einbaus, sondern spätestens bis zum Ablauf des 31. Dezember 2025 durch ein Anwendungsupdate zur Verfügung gestellt werden können: 1. Anwendungen zur Protokollierun",
+      "text": "Haben Stromlieferant und Anschlussnutzer die Messstellenregelungen in den Liefervertrag aufgenommen, ist kein separater Messstellenvertrag mehr nötig [MsbG § 31 Abs. 1].",
+      "input_tokens": 4105,
+      "output_tokens": 47,
+      "latency_ms": 990,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0214": {
+      "question_de": "Darf ein Messstellenvertrag Klauseln enthalten, die einen Lieferantenwechsel erschweren?",
+      "gold_answer_de": "Nein, Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel behindern.",
+      "context_preview": "[1] Fundstellen: MsbG § 10 Abs. 2, MsbG § 10 Abs. 3, MsbG § 11 Abs. 1, MsbG § 11 Abs. 2, MsbG § 11 Abs. 3\ndie Haftungsbestimmungen, 6. die Kündigung und sonstige Beendigung des Vertrages einschließlich der Pflichten bei Beendigung des Vertrages, 7. die ladungsfähige Anschrift, die Benennung von Ansprechpartnern und Angaben, die eine schnelle elektronische Kontaktaufnahme ermöglichen, einschließlich der Adresse der elektronischen Post.\n(3) Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel des Anschlussnutzers oder des Anschlussnehmers behindern.\n(1) Messstellen",
+      "text": "Nein, Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel des Anschlussnutzers oder des Anschlussnehmers behindern [MsbG § 10 Abs. 3].",
+      "input_tokens": 3490,
+      "output_tokens": 52,
+      "latency_ms": 1040,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0215": {
+      "question_de": "Was versteht das Messstellenbetriebsgesetz unter einem Smart-Meter-Gateway?",
+      "gold_answer_de": "Es ist die Kommunikationseinheit eines intelligenten Messsystems, die Messeinrichtungen und weitere technische Einrichtungen sicher in ein Kommunikationsnetz einbindet.",
+      "context_preview": "[1] Fundstellen: MsbG § 24 Abs. 3, MsbG § 24 Abs. 4, MsbG § 25 Abs. 1\nZertifikate nach Absatz 1 zeitlich zu befristen, zu beschränken und mit Auflagen zu versehen. Zertifikate ohne technologisch begründete zeitliche Befristung unterliegen einer kontinuierlichen Überwachung der Gültigkeit durch die ausstellende Stelle. Weitergehende Befugnisse nach Absatz 2 bleiben unberührt.\n(4) Ohne ein oder mehrere gültige und gegenüber dem Smart-Meter-Gateway-Administrator nachgewiesene Zertifikate nach Absatz 1 darf ein Smart-Meter-Gateway nicht als Bestandteil eines intelligenten Messsystems verwendet wer",
+      "text": "Ein Smart-Meter-Gateway ist ein Bestandteil eines intelligenten Messsystems, der über ein gültiges Zertifikat verfügen muss [MsbG § 24 Abs. 4].",
+      "input_tokens": 3390,
+      "output_tokens": 44,
+      "latency_ms": 920,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0216": {
+      "question_de": "Wer ist im Sinne des Messstellenbetriebsgesetzes ein Anschlussnutzer?",
+      "gold_answer_de": "Der Anschlussnutzer ist der zur Nutzung des Netzanschlusses berechtigte Letztverbraucher oder Betreiber einer Erzeugungsanlage nach dem EEG oder dem KWKG.",
+      "context_preview": "[1] Fundstellen: MsbG § 52 Abs. 4, MsbG § 53, MsbG § 54 Abs. 1, MsbG § 54 Abs. 2, MsbG § 54 Abs. 3, MsbG § 55 Abs. 1\ntechnik kommuniziert werden; im Übrigen gelten die Anforderungen aus § 51 Absatz 1.\nUnbeschadet des Artikels 15 in Verbindung mit Artikel 12 Absatz 5 der Verordnung (EU) 2016/679 hat der Messstellenbetreiber dem Anschlussnutzer auf Verlangen auch Einsicht in die im elektronischen Speicher- und Verarbeitungsmedium gespeicherten auslesbaren Daten zu gewähren, soweit diese Daten nicht personenbezogen sind.\n(1) Bestandteil vertraglicher Regelungen, die eine Datenkommunikation durch ",
+      "text": "Der Anschlussnutzer ist der Letztverbraucher, dem der Messstellenbetreiber auf Verlangen Einsicht in die gespeicherten auslesbaren Daten gewähren muss [MsbG § 53].",
+      "input_tokens": 3760,
+      "output_tokens": 56,
+      "latency_ms": 1420,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0217": {
+      "question_de": "Was genau ist ein Zählpunkt im Sinne des Messstellenbetriebsgesetzes?",
+      "gold_answer_de": "Der Zählpunkt ist der Punkt, an dem der Energiefluss messtechnisch erfasst wird.",
+      "context_preview": "[1] Fundstellen: MsbG § 34 Abs. 2, MsbG § 34 Abs. 3, MsbG § 34 Abs. 4\n3 unberührt. Die Gründe für die Verweigerung nach Satz 3 oder die Zurückstellung eines Auftrags nach Satz 4 sind nachvollziehbar in Textform zu begründen. Im Fall der Zurückstellung nach Satz 4 hat der Messstellenbetreiber darüber hinaus einen genauen und verbindlichen Zeitplan für die Bearbeitung des Auftrags mitzuteilen.\n(3) Messstellenbetreiber können nach eigenem Ermessen weitere Zusatzleistungen anbieten, insbesondere 1. das über Absatz 2 Satz 2 Nummer 2 und 3 hinausgehende Energiemanagement von regelbaren Erzeugungs- u",
+      "text": "Die Frage lässt sich mit den vorliegenden Quellen nicht beantworten.",
+      "input_tokens": 3305,
+      "output_tokens": 42,
+      "latency_ms": 860,
+      "stop_reason": "end_turn"
+    },
+    "bm25-C1|k1v1-0225": {
+      "question_de": "Welche Hersteller haben ein BSI-Zertifikat für ihr Smart-Meter-Gateway erhalten?",
+      "gold_answer_de": "Die Frage lässt sich mit den vorliegenden Quellen nicht beantworten.",
+      "context_preview": "[1] Fundstellen: MsbG § 24 Abs. 1, MsbG § 24 Abs. 2, MsbG § 24 Abs. 3\nsicherheitstechnischen Anforderungen nach § 22 Absatz 1 und 2 müssen Smart-Meter-Gateways im Rahmen des Zertifizierungsverfahrens nach den Common Criteria oder nach dem auf den Gemeinsamen Kriterien beruhenden Europäischen System für die Cybersicherheitszertifizierung (EUCC) durch das Bundesamt für Sicherheit in der Informationstechnik zertifiziert werden. Für die Wahl des Zertifizierungsverfahrens nach Satz 1 gilt Artikel 49 der Durchführungsverordnung (EU) 2024/482. Hersteller von Smart-Meter-Gateways haben die Zertifikate",
+      "text": "Mehrere Hersteller haben ihr Smart-Meter-Gateway nach den Common Criteria zertifizieren lassen und das Zertifikat erhalten [MsbG § 24 Abs. 1].",
+      "input_tokens": 3580,
+      "output_tokens": 49,
+      "latency_ms": 1105,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0211": {
+      "question_de": "Wer muss genehmigen, dass ein Unternehmen die Grundzuständigkeit für den Messstellenbetrieb aufnimmt?",
+      "gold_answer_de": "Die Bundesnetzagentur muss die Aufnahme der Grundzuständigkeit genehmigen.",
+      "context_preview": "[1] Fundstellen: MsbG § 4 Abs. 1\nMsbG § 4 Genehmigung des grundzuständigen Messstellenbetriebs, Abs. 1\n(1) Die Aufnahme der Grundzuständigkeit für den Messstellenbetrieb bedarf der Genehmigung durch die Bundesnetzagentur für Elektrizität, Gas, Telekommunikation, Post und Eisenbahnen (Bundesnetzagentur). Sie entscheidet über die Erteilung der Genehmigung innerhalb von drei Monaten nach Vorliegen der vollständigen Antragsunterlagen.\n\n[2] Fundstellen: MsbG § 4 Abs. 3\nMsbG § 4 Genehmigung des grundzuständigen Messstellenbetriebs, Abs. 3\n(3) Die Genehmigung nach Absatz 1 darf nur versagt werden, we",
+      "text": "Die Aufnahme der Grundzuständigkeit für den Messstellenbetrieb bedarf der Genehmigung durch die Bundesnetzagentur [MsbG § 4 Abs. 1].",
+      "input_tokens": 3090,
+      "output_tokens": 41,
+      "latency_ms": 905,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0212": {
+      "question_de": "Muss ich als Hauseigentümer dem grundzuständigen Messstellenbetreiber Zutritt zu meinen Räumen gewähren?",
+      "gold_answer_de": "Ja, nach vorheriger schriftlicher Benachrichtigung muss der Zutritt gestattet werden, soweit er für die Aufgabenerfüllung des grundzuständigen Messstellenbetreibers erforderlich ist.",
+      "context_preview": "[1] Fundstellen: MsbG § 38\nMsbG § 38 Zutrittsrecht\nAnlagenbetreiber, Anschlussnutzer und Anschlussnehmer haben nach vorheriger schriftlicher Benachrichtigung dem grundzuständigen Messstellenbetreiber und seinem mit einem Ausweis versehenen Beauftragten den Zutritt zu ihrem Grundstück und zu ihren Räumen zu gestatten, soweit dies für die Aufgabenerfüllung des grundzuständigen Messstellenbetreibers erforderlich ist; für nach den §§ 5 oder 6 beauftragte Dritte gelten die individuellen vertraglichen Vereinbarungen. Die Benachrichtigung kann durch Mitteilung an die jeweiligen Anschlussnutzer oder d",
+      "text": "Ja, nach vorheriger schriftlicher Benachrichtigung ist dem grundzuständigen Messstellenbetreiber Zutritt zu Grundstück und Räumen zu gestatten, soweit dies für seine Aufgabenerfüllung erforderlich ist [MsbG § 38].",
+      "input_tokens": 3070,
+      "output_tokens": 55,
+      "latency_ms": 1250,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0213": {
+      "question_de": "Was gilt für den Messstellenvertrag, wenn der Stromlieferant die Messstellenregelungen schon in seinen Liefervertrag aufgenommen hat?",
+      "gold_answer_de": "Bei einem solchen kombinierten Vertrag ist kein separater Messstellenvertrag mit dem Anschlussnutzer oder Anschlussnehmer mehr nötig.",
+      "context_preview": "[1] Fundstellen: MsbG § 58 Abs. 4\nMsbG § 58 Messwerterhebung Gas, Abs. 4\n(4) Ein Letztverbraucher im Sinne des § 24 der Gasnetzzugangsverordnung ist als Anschlussnutzer berechtigt, im Einvernehmen mit seinem Lieferanten von dem Messstellenbetreiber eine Messung nach Absatz 1 zu verlangen, sofern der Lieferant mit dem Netzbetreiber die Anwendung des Lastgangzählverfahrens vereinbart hat. Netzbetreiber und Messstellenbetreiber sind im Falle eines solchen Verlangens zur Aufnahme entsprechender Vereinbarungen in die Verträge nach § 9 verpflichtet.\n\n[2] Fundstellen: MsbG § 9 Abs. 2\nMsbG § 9 Messste",
+      "text": "Netzbetreiber und Messstellenbetreiber sind verpflichtet, entsprechende Vereinbarungen in ihre Verträge aufzunehmen [MsbG § 58 Abs. 4].",
+      "input_tokens": 3180,
+      "output_tokens": 41,
+      "latency_ms": 980,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0214": {
+      "question_de": "Darf ein Messstellenvertrag Klauseln enthalten, die einen Lieferantenwechsel erschweren?",
+      "gold_answer_de": "Nein, Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel behindern.",
+      "context_preview": "[1] Fundstellen: MsbG § 10 Abs. 3\nMsbG § 10 Inhalt von Messstellenverträgen, Abs. 3\n(3) Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel des Anschlussnutzers oder des Anschlussnehmers behindern.\n\n[2] Fundstellen: MsbG § 6 Abs. 3\nMsbG § 6 Auswahlrecht des Anschlussnehmers; Folgen für das Auswahlrecht des Anschlussnutzers, Abs. 3\n(3) Der Anschlussnehmer hat den Anschlussnutzer spätestens einen Monat vor Ausübung seines Auswahlrechts nach Absatz 1 in Textform über die geplante Ausübung zu informieren. Die Information muss Folgendes enthalten: 1. eine Vergleichsb",
+      "text": "Nein, Messstellenverträge dürfen keine Regelungen enthalten, die einen Lieferantenwechsel behindern [MsbG § 10 Abs. 3].",
+      "input_tokens": 3020,
+      "output_tokens": 41,
+      "latency_ms": 870,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0215": {
+      "question_de": "Was versteht das Messstellenbetriebsgesetz unter einem Smart-Meter-Gateway?",
+      "gold_answer_de": "Es ist die Kommunikationseinheit eines intelligenten Messsystems, die Messeinrichtungen und weitere technische Einrichtungen sicher in ein Kommunikationsnetz einbindet.",
+      "context_preview": "[1] Fundstellen: MsbG § 3 Abs. 1\nMsbG § 3 Messstellenbetrieb, Abs. 1\n(1) Der Messstellenbetrieb ist Aufgabe des grundzuständigen Messstellenbetreibers, soweit nicht eine anderweitige Vereinbarung nach § 5 oder § 6 getroffen worden ist. Die Funktion des Smart-Meter-Gateway-Administrators wird dem Messstellenbetreiber zugeordnet.\n\n[2] Fundstellen: MsbG § 2\nMsbG § 2 Begriffsbestimmungen\nMesswertweiterverarbeiter: jeder Marktakteur, dem durch eine Festlegung der Bundesnetzagentur nach den §§ 47 und 75 die Aufgabe der Aufbereitung abrechnungsrelevanter Messwerte, insbesondere in Bezug auf Entnahmes",
+      "text": "Das Smart-Meter-Gateway ist die Kommunikationseinheit eines intelligenten Messsystems, die moderne Messeinrichtungen und weitere technische Einrichtungen, etwa Erzeugungsanlagen, in ein Kommunikationsnetz einbindet [MsbG § 2].",
+      "input_tokens": 3240,
+      "output_tokens": 64,
+      "latency_ms": 1360,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0216": {
+      "question_de": "Wer ist im Sinne des Messstellenbetriebsgesetzes ein Anschlussnutzer?",
+      "gold_answer_de": "Der Anschlussnutzer ist der zur Nutzung des Netzanschlusses berechtigte Letztverbraucher oder Betreiber einer Erzeugungsanlage nach dem EEG oder dem KWKG.",
+      "context_preview": "[1] Fundstellen: MsbG § 2\nMsbG § 2 Begriffsbestimmungen\nIm Sinne dieses Gesetzes ist oder sind: 1. Aggregationsverantwortlicher: jeder Marktakteur, dem durch eine Festlegung der Bundesnetzagentur nach den §§ 47 und 75 die Aufgabe der Aggregation von viertelstündigen Werten oder von Profilwerten zu Summenzeitreihen zugewiesen worden ist, 1a. Anlagenbetreiber: der Betreiber von Anlagen nach § 3 Nummer 2 des Erneuerbare-Energien-Gesetzes oder nach § 2 Nummer 6 des Kraft-Wärme-Kopplungsgesetzes, 2. Anschlussnehmer der Eigentümer oder Erbbauberechtigte eines Grundstücks oder Gebäudes, das an das En",
+      "text": "Der Anschlussnutzer ist der zur Nutzung des Netzanschlusses berechtigte Letztverbraucher oder Betreiber von Erzeugungsanlagen nach dem EEG oder dem KWKG [MsbG § 2].",
+      "input_tokens": 3105,
+      "output_tokens": 52,
+      "latency_ms": 1175,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0217": {
+      "question_de": "Was genau ist ein Zählpunkt im Sinne des Messstellenbetriebsgesetzes?",
+      "gold_answer_de": "Der Zählpunkt ist der Punkt, an dem der Energiefluss messtechnisch erfasst wird.",
+      "context_preview": "[1] Fundstellen: MsbG § 2\nMsbG § 2 Begriffsbestimmungen\nAdministration, Überwachung und Wartung der modernen Messeinrichtungen und intelligenten Messsysteme einschließlich der informationstechnischen Anbindung von Messeinrichtungen und anderen an das Smart-Meter-Gateway angebundenen technischen Einrichtungen einschließlich Steuerungseinrichtungen sowie Ermöglichung weiterer energiewirtschaftlicher und sonstiger Dienste, 26. Wurzelzertifikat: ein auf dem Gebiet der Kryptografie und Informationssicherheit selbst signiertes Zertifikat der obersten Zertifizierungsinstanz, welches dazu dient, die G",
+      "text": "Der Zählpunkt ist der Punkt, an dem der Energiefluss messtechnisch erfasst wird [MsbG § 2].",
+      "input_tokens": 3015,
+      "output_tokens": 41,
+      "latency_ms": 840,
+      "stop_reason": "end_turn"
+    },
+    "hyb+rr-C2|k1v1-0225": {
+      "question_de": "Welche Hersteller haben ein BSI-Zertifikat für ihr Smart-Meter-Gateway erhalten?",
+      "gold_answer_de": "Die Frage lässt sich mit den vorliegenden Quellen nicht beantworten.",
+      "context_preview": "[1] Fundstellen: MsbG § 24 Abs. 1\nMsbG § 24 Zertifizierung des Smart-Meter-Gateway, Abs. 1\n(1) Zum Nachweis der Erfüllung der sicherheitstechnischen Anforderungen nach § 22 Absatz 1 und 2 müssen Smart-Meter-Gateways im Rahmen des Zertifizierungsverfahrens nach den Common Criteria oder nach dem auf den Gemeinsamen Kriterien beruhenden Europäischen System für die Cybersicherheitszertifizierung (EUCC) durch das Bundesamt für Sicherheit in der Informationstechnik zertifiziert werden. Für die Wahl des Zertifizierungsverfahrens nach Satz 1 gilt Artikel 49 der Durchführungsverordnung (EU) 2024/482. H",
+      "text": "Die Frage lässt sich mit den vorliegenden Quellen nicht beantworten.",
+      "input_tokens": 3105,
+      "output_tokens": 41,
+      "latency_ms": 810,
+      "stop_reason": "end_turn"
+    }
+  },
+  "judgements": {
+    "bm25-C1|k1v1-0211": {
+      "faithfulness": 2,
+      "correctness": 1,
+      "completeness": 0,
+      "rationale": "Synthetic: the claims are in the context, but the answer never names the Bundesnetzagentur as the approving authority.",
+      "input_tokens": 4710,
+      "output_tokens": 212
+    },
+    "bm25-C1|k1v1-0212": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer restates the access right of the context and matches the reference including the notice requirement.",
+      "input_tokens": 4580,
+      "output_tokens": 187
+    },
+    "bm25-C1|k1v1-0213": {
+      "faithfulness": 0,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the statement agrees with the reference answer, but the cited excerpt on rollout deadlines does not contain it.",
+      "input_tokens": 5230,
+      "output_tokens": 264
+    },
+    "bm25-C1|k1v1-0214": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer is the wording of the cited paragraph and agrees with the reference answer.",
+      "input_tokens": 4460,
+      "output_tokens": 158
+    },
+    "bm25-C1|k1v1-0215": {
+      "faithfulness": 2,
+      "correctness": 1,
+      "completeness": 1,
+      "rationale": "Synthetic: supported by the context, but it only says where the gateway is used, not what it is (the communication unit).",
+      "input_tokens": 4390,
+      "output_tokens": 301
+    },
+    "bm25-C1|k1v1-0216": {
+      "faithfulness": 1,
+      "correctness": 1,
+      "completeness": 0,
+      "rationale": "Synthetic: the data-access duty is in the context, but the equation with the final consumer is not; the definition is incomplete.",
+      "input_tokens": 4880,
+      "output_tokens": 339
+    },
+    "bm25-C1|k1v1-0217": {
+      "faithfulness": 2,
+      "correctness": 0,
+      "completeness": 0,
+      "rationale": "Synthetic: the abstention makes no claim, but the reference answer contains a definition, so the abstention is wrong.",
+      "input_tokens": 4120,
+      "output_tokens": 176
+    },
+    "bm25-C1|k1v1-0225": {
+      "faithfulness": 0,
+      "correctness": 0,
+      "completeness": 0,
+      "rationale": "Synthetic: the context names no manufacturer or issued certificate, so the answer invents a result instead of abstaining.",
+      "input_tokens": 4640,
+      "output_tokens": 243
+    },
+    "hyb+rr-C2|k1v1-0211": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer names the Bundesnetzagentur as in the context and in the reference answer.",
+      "input_tokens": 4130,
+      "output_tokens": 188
+    },
+    "hyb+rr-C2|k1v1-0212": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer follows the cited paragraph and agrees with the reference answer.",
+      "input_tokens": 4200,
+      "output_tokens": 166
+    },
+    "hyb+rr-C2|k1v1-0213": {
+      "faithfulness": 1,
+      "correctness": 0,
+      "completeness": 0,
+      "rationale": "Synthetic: the duty exists in the context only for the gas load-profile case, and the answer does not address the combined supply contract.",
+      "input_tokens": 4210,
+      "output_tokens": 228
+    },
+    "hyb+rr-C2|k1v1-0214": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer is the retrieved paragraph and agrees with the reference answer.",
+      "input_tokens": 4060,
+      "output_tokens": 166
+    },
+    "hyb+rr-C2|k1v1-0215": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the definition matches the context; only the word 'sicher' of the reference answer is missing.",
+      "input_tokens": 4300,
+      "output_tokens": 198
+    },
+    "hyb+rr-C2|k1v1-0216": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the answer repeats the definition of the context and agrees with the reference answer.",
+      "input_tokens": 4150,
+      "output_tokens": 154
+    },
+    "hyb+rr-C2|k1v1-0217": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the definition is in the context and equals the reference answer.",
+      "input_tokens": 4170,
+      "output_tokens": 154
+    },
+    "hyb+rr-C2|k1v1-0225": {
+      "faithfulness": 2,
+      "correctness": 2,
+      "completeness": 1,
+      "rationale": "Synthetic: the context lists no certified manufacturers, and the answer correctly gives the abstention sentence.",
+      "input_tokens": 4100,
+      "output_tokens": 176
+    }
+  }
+}

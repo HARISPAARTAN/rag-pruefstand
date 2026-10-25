@@ -1,0 +1,36 @@
+# Price table in USD per million tokens. Prices are data: change them here with a new as_of date.
+[meta]
+source = "https://platform.claude.com/docs/en/about-claude/pricing"
+as_of = "2026-10-06"
+note = "From the claude-api skill model table cached 2026-10-06, not fetched live; recheck before the live run."
+batch_discount = 0.5
+eur_per_usd = 0.8934
+eur_rate_date = "2026-10-23"
+eur_rate_source = "ECB euro foreign exchange reference rate of 2026-10-23: 1 EUR = 1.1193 USD"
+
+# cache_write = 5-minute cache write (1.25x input); cache_read as published per model.
+[models."claude-haiku-5-5"]
+input = 0.10
+output = 0.50
+cache_read = 0.01
+cache_write = 0.125
+note = "Rate card for prompts up to 100K tokens; longer prompts cost USD 0.50 / 2.50. Thinking is billed as output."
+
+[models."claude-sonnet-5-5"]
+input = 2.00
+output = 10.00
+cache_read = 0.20
+cache_write = 2.50
+
+[models."claude-opus-5-5"]
+input = 4.00
+output = 20.00
+cache_read = 0.20
+cache_write = 5.00
+
+[models."qwen3:4b"]
+input = 0.0
+output = 0.0
+cache_read = 0.0
+cache_write = 0.0
+note = "Local Ollama model: no API cost; wall time and CPU are reported instead, electricity not counted."
