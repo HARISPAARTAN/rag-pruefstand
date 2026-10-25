@@ -97,6 +97,7 @@ def cfg(root, tmp_path) -> Config:
             "type": "factual" if i % 2 else "multi_hop",
             "answerable": True,
             "question_de": " ".join(unit.text.split()[:12]),
+            "gold_passage_de": " ".join(unit.text.split()[:12]),
             "gold_unit_ids": [unit.unit_id],
             "review": {"status": "accept"},
         }
@@ -166,9 +167,9 @@ def test_cache_miss_without_compute_is_a_pruefstand_error(cfg):
 
 def chunks_and_questions(cfg, chunking):
     units = load_units(cfg.path(cfg["corpus"]["units_path"]))
-    lengths = {unit.unit_id: len(unit.text) for unit in units}
+    texts = {unit.unit_id: unit.text for unit in units}
     chunks = load_chunks(chunks_path(cfg, chunking))
-    return chunks, read_jsonl(cfg.path(cfg["questions"]["path"])), lengths
+    return chunks, read_jsonl(cfg.path(cfg["questions"]["path"])), texts
 
 
 def test_models_receive_the_configured_prefixes(cfg):
@@ -208,8 +209,8 @@ def test_rrf_k_from_config_reaches_the_fusion(cfg):
 
 def test_rerank_pool_is_the_top_candidates_of_both_bases(cfg):
     hub = FakeHub(cfg)
-    chunks, questions, lengths = chunks_and_questions(cfg, "C2")
-    rows = retrieve_chunking(cfg, "C2", chunks, questions, lengths, open_caches(cfg), hub)
+    chunks, questions, texts = chunks_and_questions(cfg, "C2")
+    rows = retrieve_chunking(cfg, "C2", chunks, questions, texts, open_caches(cfg), hub)
     retrieval = cfg["retrieval"]
     depth, rerank_depth = retrieval["candidate_depth"], retrieval["rerank_depth"]
     assert rerank_depth == 20
@@ -251,6 +252,14 @@ def test_hits_carry_ideal_gains_and_token_counts(cfg):
     questions = {q["qid"]: q for q in read_jsonl(cfg.path(cfg["questions"]["path"]))}
     for per_question in per_question_metrics(rows, questions).values():
         assert all(0.0 <= values["ndcg@10"] <= 1.0 for values in per_question.values())
+
+
+def test_results_metadata_records_the_relevance_rule(cfg):
+    run_retrieval(cfg, FakeHub(cfg))
+    relevance = read_json(cfg.run_dir / "retrieval_meta.json")["relevance"]
+    assert relevance["long_unit_chars"] == 2000 and relevance["min_overlap_chars"] == 200
+    assert "excerpt" in relevance["rule"] and relevance["n_passage_based_gold_units"] >= 1
+    assert compute_retrieval_metrics(cfg)["relevance"] == relevance
 
 
 def test_metrics_record_notes_tokens_and_truncation(cfg):

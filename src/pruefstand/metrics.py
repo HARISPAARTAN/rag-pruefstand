@@ -1,7 +1,15 @@
 """Span-based relevance and per-question retrieval metrics.
 
-A retrieved chunk is relevant to a gold unit when it covers at least 50% of the unit's characters or at least
-200 of them. Metrics count gold units, not chunks, so overlapping C1 windows earn no extra credit.
+Relevance of a retrieved chunk to a gold unit depends on the unit's length:
+
+- Units of at most LONG_UNIT_CHARS (2,000) characters: unit-level relevance. The chunk covers at least 200 of the
+  unit's characters or at least 50% of them.
+- Longer units (the definition norms; EnWG section 3 has 32,331 characters): passage-based relevance. Each excerpt
+  of the question's gold passage is located in the unit text, and a chunk is relevant only if it overlaps one
+  excerpt by at least min(200 characters, 50% of that excerpt). A chunk of the same giant unit that misses the
+  passage does not count, so a retriever that returns a different definition from the same list gets no credit.
+
+Metrics count gold units, not chunks, so overlapping C1 windows earn no extra credit.
 
 Which metric compares what:
 
@@ -16,13 +24,23 @@ Which metric compares what:
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Iterable, Mapping, Sequence
 
 from pruefstand.errors import PruefstandError
+from pruefstand.questions.schema import PASSAGE_SEPARATOR, normalise_ws
 
 MIN_OVERLAP_CHARS = 200
 MIN_OVERLAP_SHARE = 0.5
+LONG_UNIT_CHARS = 2000
 K_VALUES = (1, 3, 5, 10)
+RELEVANCE_RULE = (
+    "Gold units of at most 2000 characters: a chunk is relevant when it covers at least min(200 characters, 50% "
+    "of the unit). Longer gold units: a chunk is relevant only when it overlaps an excerpt of the gold passage "
+    "(located in the unit text) by at least min(200 characters, 50% of the excerpt)."
+)
+
+Spans = Mapping[str, Sequence[tuple[int, int]]]
 
 
 def validate_gold(gold_unit_ids: Sequence[str], unit_lengths: Mapping[str, int]) -> None:
@@ -34,21 +52,70 @@ def validate_gold(gold_unit_ids: Sequence[str], unit_lengths: Mapping[str, int])
         raise PruefstandError(f"duplicate gold unit ids: {list(gold_unit_ids)}")
 
 
+def locate_excerpts(unit_text: str, gold_passage: str) -> list[tuple[int, int]]:
+    """Character spans of every excerpt of a gold passage in the raw unit text (all occurrences).
+
+    Excerpts are separated by the passage separator; whitespace may differ between passage and unit text, as in
+    the question validation. Excerpts that do not occur in this unit are skipped.
+    """
+    spans: set[tuple[int, int]] = set()
+    for part in normalise_ws(gold_passage).split(PASSAGE_SEPARATOR.strip()):
+        words = part.split()
+        if not words:
+            continue
+        pattern = re.compile(r"\s+".join(re.escape(word) for word in words))
+        spans.update((match.start(), match.end()) for match in pattern.finditer(unit_text))
+    return sorted(spans)
+
+
+def passage_spans(
+    gold_unit_ids: Sequence[str], gold_passage: str, unit_texts: Mapping[str, str], qid: str = "?"
+) -> dict[str, list[tuple[int, int]]]:
+    """Excerpt spans per long gold unit; units of at most LONG_UNIT_CHARS characters are left out (unit-level)."""
+    spans: dict[str, list[tuple[int, int]]] = {}
+    for unit_id in gold_unit_ids:
+        text = unit_texts[unit_id]
+        if len(text) <= LONG_UNIT_CHARS:
+            continue
+        found = locate_excerpts(text, gold_passage)
+        if not found:
+            raise PruefstandError(
+                f"{qid}: no excerpt of the gold passage found in the long gold unit {unit_id} ({len(text)} chars)"
+            )
+        spans[unit_id] = found
+    return spans
+
+
 def gold_units_covered(
-    covers: Sequence[Mapping], gold_unit_ids: Sequence[str], unit_lengths: Mapping[str, int]
+    covers: Sequence[Mapping],
+    gold_unit_ids: Sequence[str],
+    unit_lengths: Mapping[str, int],
+    spans: Spans | None = None,
 ) -> list[str]:
-    """Gold unit ids this chunk is relevant to, in the order of gold_unit_ids."""
+    """Gold unit ids this chunk is relevant to, in the order of gold_unit_ids.
+
+    spans maps long gold units to the (start, end) spans of the gold-passage excerpts in the unit text; for those
+    units relevance is passage-based, for all others it is unit-level (see the module docstring).
+    """
     validate_gold(gold_unit_ids, unit_lengths)
-    overlap: dict[str, int] = {}
+    spans = spans or {}
+    by_unit: dict[str, list[tuple[int, int]]] = {}
     for cover in covers:
-        unit_id = cover["unit_id"]
-        overlap[unit_id] = overlap.get(unit_id, 0) + int(cover["end"]) - int(cover["start"])
+        by_unit.setdefault(cover["unit_id"], []).append((int(cover["start"]), int(cover["end"])))
     covered = []
     for unit_id in gold_unit_ids:
-        chars = overlap.get(unit_id, 0)
-        if chars <= 0:
+        ranges = by_unit.get(unit_id)
+        if not ranges:
             continue
-        if chars >= MIN_OVERLAP_CHARS or chars >= MIN_OVERLAP_SHARE * unit_lengths[unit_id]:
+        if unit_id in spans:
+            for start, end in spans[unit_id]:
+                chars = sum(max(0, min(end, hi) - max(start, lo)) for lo, hi in ranges)
+                if chars > 0 and chars >= min(MIN_OVERLAP_CHARS, MIN_OVERLAP_SHARE * (end - start)):
+                    covered.append(unit_id)
+                    break
+            continue
+        chars = sum(hi - lo for lo, hi in ranges)
+        if chars > 0 and (chars >= MIN_OVERLAP_CHARS or chars >= MIN_OVERLAP_SHARE * unit_lengths[unit_id]):
             covered.append(unit_id)
     return covered
 

@@ -61,3 +61,15 @@ def test_review_sheet_lists_100_questions_with_the_set_type_shares(questions):
     assert len(rows) == 100 and all(row["qid"] in by_qid for row in rows)
     assert Counter(row["type"] for row in rows) == TYPE_SHARE
     assert all(row["verdict"] == "" for row in rows)
+
+
+def test_every_long_gold_unit_has_a_located_passage_for_the_passage_based_relevance(questions, units_by_id):
+    from pruefstand.metrics import LONG_UNIT_CHARS, passage_spans
+
+    texts = {uid: unit.text for uid, unit in units_by_id.items()}
+    long_units = 0
+    for question in questions:
+        spans = passage_spans(question["gold_unit_ids"], question["gold_passage_de"], texts, question["qid"])
+        assert set(spans) == {u for u in question["gold_unit_ids"] if len(texts[u]) > LONG_UNIT_CHARS}
+        long_units += len(spans)
+    assert long_units >= 48  # at least the definition questions

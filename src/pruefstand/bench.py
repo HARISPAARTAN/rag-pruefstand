@@ -9,7 +9,16 @@ from pruefstand.config import Config
 from pruefstand.corpus.gii import load_units
 from pruefstand.errors import PruefstandError
 from pruefstand.io import read_jsonl, write_json, write_jsonl
-from pruefstand.metrics import gold_units_covered, ideal_gains, validate_gold
+from pruefstand.metrics import (
+    LONG_UNIT_CHARS,
+    MIN_OVERLAP_CHARS,
+    MIN_OVERLAP_SHARE,
+    RELEVANCE_RULE,
+    gold_units_covered,
+    ideal_gains,
+    passage_spans,
+    validate_gold,
+)
 from pruefstand.retrieval.bm25 import BM25Index
 from pruefstand.retrieval.cache import EmbeddingCache, RerankCache
 from pruefstand.retrieval.dense import NORMALIZE, DenseIndex
@@ -192,7 +201,7 @@ def retrieve_chunking(
     chunking: str,
     chunks: list[Chunk],
     questions: list[dict],
-    unit_lengths: dict[str, int],
+    unit_texts: dict[str, str],
     caches: dict,
     hub: ModelHub,
 ) -> list[dict]:
@@ -234,16 +243,19 @@ def retrieve_chunking(
         for cover in chunk.covers:
             chunks_by_unit.setdefault(cover["unit_id"], []).append(index)
 
+    unit_lengths = {unit_id: len(text) for unit_id, text in unit_texts.items()}
     rows = []
     for i, question in enumerate(questions):
         gold = question["gold_unit_ids"]
         validate_gold(gold, unit_lengths)
         if question["answerable"] and not gold:
             raise PruefstandError(f"{question['qid']}: an answerable question needs at least one gold unit")
+        # Long gold units are graded on the gold passage, not on the whole unit (see pruefstand.metrics).
+        spans = passage_spans(gold, question.get("gold_passage_de", ""), unit_texts, question["qid"])
         # Ideal gains of this chunking for nDCG: greedy cover of the gold units by the chunks that overlap them.
         overlapping = sorted({index for unit_id in gold for index in chunks_by_unit.get(unit_id, [])})
         ideal = ideal_gains(
-            gold_units_covered(chunks[index].covers, gold, unit_lengths) for index in overlapping
+            gold_units_covered(chunks[index].covers, gold, unit_lengths, spans) for index in overlapping
         )
         for retriever in retrieval["retrievers"]:
             ranked = candidates[i][retriever][:top]
@@ -260,7 +272,7 @@ def retrieve_chunking(
                             "chunk_id": chunks[doc].chunk_id,
                             "score": score,
                             "n_tokens": chunks[doc].n_tokens,
-                            "gold_covered": gold_units_covered(chunks[doc].covers, gold, unit_lengths),
+                            "gold_covered": gold_units_covered(chunks[doc].covers, gold, unit_lengths, spans),
                         }
                         for rank, (doc, score) in enumerate(ranked, start=1)
                     ],
@@ -269,20 +281,38 @@ def retrieve_chunking(
     return rows
 
 
+def relevance_meta(questions: list[dict], unit_texts: dict[str, str]) -> dict:
+    """The relevance rule and how many questions and gold units it grades on the passage, for the results metadata."""
+    passage_based_units = 0
+    passage_based_questions = 0
+    for question in questions:
+        spans = passage_spans(question["gold_unit_ids"], question.get("gold_passage_de", ""), unit_texts)
+        passage_based_units += len(spans)
+        passage_based_questions += bool(spans)
+    return {
+        "rule": RELEVANCE_RULE,
+        "long_unit_chars": LONG_UNIT_CHARS,
+        "min_overlap_chars": MIN_OVERLAP_CHARS,
+        "min_overlap_share": MIN_OVERLAP_SHARE,
+        "n_passage_based_questions": passage_based_questions,
+        "n_passage_based_gold_units": passage_based_units,
+    }
+
+
 def run_retrieval(cfg: Config, hub: ModelHub | None = None) -> int:
     """Run all variants, write hits.jsonl.gz, prune and save the caches; returns the number of hit rows."""
     hub = hub or ModelHub(cfg)
     questions = load_questions(cfg)
     units = load_units(cfg.path(cfg["corpus"]["units_path"]))
-    unit_lengths = {unit.unit_id: len(unit.text) for unit in units}
+    unit_texts = {unit.unit_id: unit.text for unit in units}
     caches = open_caches(cfg)
     rows: list[dict] = []
     truncation: dict = {}
     for chunking in cfg["retrieval"]["chunkings"]:
         chunks = load_chunks(chunks_path(cfg, chunking))
-        rows.extend(retrieve_chunking(cfg, chunking, chunks, questions, unit_lengths, caches, hub))
+        rows.extend(retrieve_chunking(cfg, chunking, chunks, questions, unit_texts, caches, hub))
         truncation[chunking] = truncation_report(cfg, chunks, hub)
-    write_json(meta_path(cfg), {"truncation": truncation})
+    write_json(meta_path(cfg), {"truncation": truncation, "relevance": relevance_meta(questions, unit_texts)})
     for cache in caches.values():
         cache.prune_unused()
         cache.save()

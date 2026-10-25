@@ -7,8 +7,10 @@ from pruefstand.errors import PruefstandError
 from pruefstand.metrics import (
     gold_units_covered,
     ideal_gains,
+    locate_excerpts,
     mrr_at_k,
     ndcg_at_k,
+    passage_spans,
     question_metrics,
     recall_at_k,
 )
@@ -23,6 +25,59 @@ def test_span_relevance_rules():
     assert gold_units_covered([{"unit_id": "u2", "start": 50, "end": 100}], ["u2"], LENGTHS) == ["u2"]
     assert gold_units_covered([{"unit_id": "u2", "start": 51, "end": 100}], ["u2"], LENGTHS) == []
     assert gold_units_covered([{"unit_id": "u3", "start": 0, "end": 500}], ["u1"], LENGTHS) == []
+
+
+LONG = "Alpha " * 1000  # 6000 characters, a "giant" unit
+LONG_LENGTHS = {"big": len(LONG), "u2": 100}
+PASSAGE = "Zielwort eins  zwei drei"
+
+
+def test_locate_excerpts_is_whitespace_flexible_and_handles_several_excerpts():
+    text = "vorn Zielwort eins zwei drei mitte Endwort hinten"
+    assert locate_excerpts(text, PASSAGE) == [(5, 28)]
+    spans = locate_excerpts(text, "Zielwort eins zwei drei … Endwort")
+    assert [text[a:b] for a, b in spans] == ["Zielwort eins zwei drei", "Endwort"]
+    assert locate_excerpts(text, "nicht vorhanden") == []
+
+
+def test_passage_spans_only_for_long_units_and_loud_when_the_passage_is_missing():
+    texts = {"big": LONG + "Zielwort eins" + chr(10) + "zwei   drei", "u2": "kurz"}
+    spans = passage_spans(["big", "u2"], PASSAGE, texts)
+    assert list(spans) == ["big"] and len(spans["big"]) == 1
+    with pytest.raises(PruefstandError, match="no excerpt"):
+        passage_spans(["big"], "steht nirgends", texts, "q1")
+
+
+def test_long_unit_chunk_outside_the_passage_is_not_relevant_but_a_covering_chunk_is():
+    start = 3000
+    spans = {"big": [(start, start + 120)]}  # a 120-character excerpt: threshold min(200, 60) = 60
+    miss = [
+        {"unit_id": "big", "start": 0, "end": 2000}
+    ]  # 2000 characters of the same unit, far from the passage
+    assert gold_units_covered(miss, ["big"], LONG_LENGTHS) == [
+        "big"
+    ]  # the old unit-level rule would count it
+    assert gold_units_covered(miss, ["big"], LONG_LENGTHS, spans) == []
+    near = [{"unit_id": "big", "start": 2500, "end": start + 59}]  # 59 characters of the excerpt: just short
+    assert gold_units_covered(near, ["big"], LONG_LENGTHS, spans) == []
+    hit = [{"unit_id": "big", "start": 2500, "end": start + 60}]  # 60 = half of the excerpt
+    assert gold_units_covered(hit, ["big"], LONG_LENGTHS, spans) == ["big"]
+    cover = [{"unit_id": "big", "start": start - 500, "end": start + 500}]
+    assert gold_units_covered(cover, ["big"], LONG_LENGTHS, spans) == ["big"]
+
+
+def test_long_excerpt_needs_200_characters_and_the_rule_is_per_gold_unit():
+    spans = {"big": [(1000, 2000)]}  # 1000-character excerpt: threshold min(200, 500) = 200
+    assert (
+        gold_units_covered([{"unit_id": "big", "start": 1000, "end": 1199}], ["big"], LONG_LENGTHS, spans)
+        == []
+    )
+    assert gold_units_covered(
+        [{"unit_id": "big", "start": 1000, "end": 1200}], ["big"], LONG_LENGTHS, spans
+    ) == ["big"]
+    # a short gold unit next to a long one keeps the unit-level rule
+    covers = [{"unit_id": "u2", "start": 50, "end": 100}, {"unit_id": "big", "start": 0, "end": 900}]
+    assert gold_units_covered(covers, ["big", "u2"], LONG_LENGTHS, spans) == ["u2"]
 
 
 def test_metrics_on_hand_computed_ranking():

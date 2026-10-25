@@ -151,6 +151,7 @@ def compute_retrieval_metrics(cfg: Config) -> dict:
             ),
         },
         "truncation": read_json(meta_path(cfg))["truncation"] if meta_path(cfg).is_file() else None,
+        "relevance": read_json(meta_path(cfg)).get("relevance") if meta_path(cfg).is_file() else None,
         "question_types": dict(sorted(Counter(q["type"] for q in question_list).items())),
         "corpus": corpus_stats(cfg),
         "variants": variants,
