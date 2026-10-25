@@ -1,0 +1,69 @@
+{
+  "config_sha256": "625b4f08e540a2795f0da1c52aed5795a44418852a8e2a3eba1df6f8c4d4345f",
+  "corpus": {
+    "fetched_at": "2026-10-25",
+    "laws": {
+      "eeg_2014": "e26f04179fa8fef3b7e8a37963ee38ed853a5db4dd9b06047601662a1fad88c7",
+      "enfg": "6d7bb5884850255fc0be71d5e774b7818f2d498be0b1a35b402c0c0119785a5f",
+      "enwg_2005": "4fa63c65ec0a89816bc1e0dd74a6a0eaa892e5b422dfe39b6ae96fc1f8809718",
+      "kwkg_2016": "e0dfd9dfac547459720e38914e16fb3c055f5d046d1131963c5efbb5d1536074",
+      "messbg": "30875c53396267ef47772bd5f53877295cfdc8a0c9bee4a6786b1abf0255249b"
+    },
+    "units_sha256": "9adcc83d04a1f93c64659d2f9009216738c4ac328379676f65abcfdc65660089"
+  },
+  "finished_at": "2026-10-25T09:27:32+00:00",
+  "git_sha": "2f73d04a73836c78bc67c9addebb22d7bd2b4e0b",
+  "llm": {
+    "ablation": "claude-haiku-5-5",
+    "generator": "claude-haiku-5-5",
+    "judge": "claude-sonnet-5-5",
+    "local": "qwen3:4b",
+    "second_judge": "claude-opus-5-5"
+  },
+  "machine": {
+    "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.11"
+  },
+  "models": {
+    "e5": {
+      "id": "intfloat/multilingual-e5-base",
+      "revision": "d128750597153bb5987e10b1c3493a34e5a4502a"
+    },
+    "mini": {
+      "id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    },
+    "reranker": {
+      "id": "BAAI/bge-reranker-base",
+      "revision": "2cfc18c9415c912f9d8155881c133215df768a70"
+    }
+  },
+  "packages": {
+    "PyStemmer": "3.1.0",
+    "anthropic": "1.17.0",
+    "bm25s": "0.3.13",
+    "numpy": "2.5.4",
+    "pruefstand": "0.1.0",
+    "sentence-transformers": "6.2.0",
+    "tokenizers": "0.23.3",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.20.2"
+  },
+  "profile": "full",
+  "prompts": {},
+  "question_set": {
+    "sha256": "527243b5afeedcec7b7d7c31b3469f2b9352e6cdf95f5b1e2cfbfc75c6d03217",
+    "version": "k1_v1"
+  },
+  "run_id": "full-2026-10-25",
+  "spend_usd": 0.0,
+  "stages": [
+    "corpus build",
+    "chunk",
+    "retrieve",
+    "latency",
+    "metrics"
+  ],
+  "started_at": "2026-10-25T08:59:26+00:00"
+}

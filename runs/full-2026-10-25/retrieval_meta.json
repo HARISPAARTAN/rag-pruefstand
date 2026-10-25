@@ -1,0 +1,48 @@
+{
+  "relevance": {
+    "long_unit_chars": 2000,
+    "min_overlap_chars": 200,
+    "min_overlap_share": 0.5,
+    "n_passage_based_gold_units": 62,
+    "n_passage_based_questions": 62,
+    "rule": "Gold units of at most 2000 characters: a chunk is relevant when it covers at least min(200 characters, 50% of the unit). Longer gold units: a chunk is relevant only when it overlaps an excerpt of the gold passage (located in the unit text) by at least min(200 characters, 50% of the excerpt)."
+  },
+  "truncation": {
+    "C1": {
+      "e5": {
+        "max_seq_length": 512,
+        "mean_tokens": 353.61,
+        "mean_visible_share": 1.0,
+        "n_chunks": 1348,
+        "n_truncated": 0,
+        "truncation_rate": 0.0
+      },
+      "mini": {
+        "max_seq_length": 512,
+        "mean_tokens": 555.17,
+        "mean_visible_share": 0.9213,
+        "n_chunks": 1348,
+        "n_truncated": 1244,
+        "truncation_rate": 0.9228
+      }
+    },
+    "C2": {
+      "e5": {
+        "max_seq_length": 512,
+        "mean_tokens": 166.38,
+        "mean_visible_share": 1.0,
+        "n_chunks": 2826,
+        "n_truncated": 0,
+        "truncation_rate": 0.0
+      },
+      "mini": {
+        "max_seq_length": 512,
+        "mean_tokens": 254.7,
+        "mean_visible_share": 0.9925,
+        "n_chunks": 2826,
+        "n_truncated": 266,
+        "truncation_rate": 0.0941
+      }
+    }
+  }
+}
