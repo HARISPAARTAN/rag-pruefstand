@@ -82,3 +82,40 @@ def test_every_long_gold_unit_has_a_located_passage_for_the_passage_based_releva
         assert set(spans) == {u for u in question["gold_unit_ids"] if len(texts[u]) > LONG_UNIT_CHARS}
         long_units += len(spans)
     assert long_units >= 48  # at least the definition questions
+
+
+def test_datasheet_claims_match_the_committed_set(questions, units_by_id):
+    import re
+
+    from pruefstand.metrics import passage_spans
+    from pruefstand.questions.schema import section_of
+
+    datasheet = (QUESTIONS / "DATASHEET.md").read_text(encoding="utf-8")
+    named = re.compile(
+        r"Energiewirtschaftsgesetz|Erneuerbare-Energien-Gesetz|Messstellenbetriebsgesetz|Energiefinanzierungsgesetz"
+        r"|Kraft-Wärme-Kopplungsgesetz|\bEEG\b|\bEnWG\b|\bKWKG\b|\bMsbG\b|\bEnFG\b"
+    )
+    count = sum(1 for q in questions if named.search(q["question_de"]))
+    assert f"{count} of the 240 questions name a law" in datasheet
+    texts = {uid: unit.text for uid, unit in units_by_id.items()}
+    passage_based = sum(
+        1 for q in questions if passage_spans(q["gold_unit_ids"], q["gold_passage_de"], texts, q["qid"])
+    )
+    assert "62 questions use at least one" in datasheet and passage_based == 62
+    crossref = [q for q in questions if q["type"] == "crossref"]
+    cross_law = [q["qid"][-4:] for q in crossref if len({u.split(":")[0] for u in q["gold_unit_ids"]}) > 1]
+    assert len(cross_law) == 6 and all(qid in datasheet for qid in cross_law)
+    assert all(len({section_of(u) for u in q["gold_unit_ids"]}) >= 2 for q in crossref)
+    unanswerable = [q for q in questions if q["type"] == "unanswerable"]
+    cues = re.compile(
+        r"derzeit|aktuell|letzten|vergangenen|laufend|Bayern|Köln|München|in der Praxis|tatsächlich"
+    )
+    assert len(unanswerable) == 24
+    assert not any(
+        cues.search(q["question_de"]) or q["question_de"].startswith("Wie viele") for q in unanswerable
+    )
+    assert (
+        "claude-sonnet-5-5" in datasheet
+        and "claude-opus-5-5" in datasheet
+        and "Author and judge" in datasheet
+    )
