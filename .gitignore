@@ -18,3 +18,6 @@ runs/*/units.jsonl.gz
 
 # Local scratch
 *.log
+
+# local review scratch of the build process
+.superpowers/
