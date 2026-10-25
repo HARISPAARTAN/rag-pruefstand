@@ -1,0 +1,229 @@
+# RAG-Prüfstand configuration. Profiles at the bottom override the base values.
+# Secrets never go here: ANTHROPIC_API_KEY and OLLAMA_HOST come from the environment or a git-ignored .env.
+
+[corpus]
+id = "K1"
+laws = ["enwg_2005", "eeg_2014", "messbg", "enfg", "kwkg_2016"]
+base_url = "https://www.gesetze-im-internet.de"
+zip_dir = ".cache/gii"
+snapshot_path = "data/corpus/snapshot.json"
+units_path = "data/corpus/k1_units.jsonl.gz"
+
+[tokenizer]
+# tokenizer.json of intfloat/multilingual-e5-base (MIT), xz-compressed; used only to count tokens for chunking
+path = "data/tokenizer/multilingual-e5-base.tokenizer.json.xz"
+
+[chunking]
+c1_window = 350
+c1_overlap = 50
+c2_max_tokens = 350
+
+[retrieval]
+top_k = 10
+candidate_depth = 50
+rerank_depth = 20
+rrf_k = 60
+cache_dir = ".cache/scores"
+allow_compute = true
+batch_size = 16
+retrievers = ["bm25", "e5", "mini", "hyb", "e5+rr", "hyb+rr"]
+chunkings = ["C1", "C2"]
+
+[models.e5]
+id = "intfloat/multilingual-e5-base"
+revision = "d128750597153bb5987e10b1c3493a34e5a4502a"
+dir = ".cache/models/multilingual-e5-base"
+query_prefix = "query: "
+passage_prefix = "passage: "
+max_seq_length = 512
+files = ["config.json", "model.safetensors", "modules.json", "sentence_bert_config.json", "sentencepiece.bpe.model",
+         "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "1_Pooling/config.json"]
+
+[models.mini]
+id = "sentence-transformers/all-MiniLM-L6-v2"
+revision = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+dir = ".cache/models/all-MiniLM-L6-v2"
+query_prefix = ""
+passage_prefix = ""
+max_seq_length = 256
+files = ["config.json", "config_sentence_transformers.json", "model.safetensors", "modules.json",
+         "sentence_bert_config.json", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json",
+         "vocab.txt", "1_Pooling/config.json"]
+
+[models.reranker]
+id = "BAAI/bge-reranker-base"
+revision = "2cfc18c9415c912f9d8155881c133215df768a70"
+dir = ".cache/models/bge-reranker-base"
+max_length = 384
+files = ["config.json", "model.safetensors", "sentencepiece.bpe.model", "special_tokens_map.json", "tokenizer.json",
+         "tokenizer_config.json"]
+
+[questions]
+path = "data/questions/k1_v1.jsonl"
+version = "k1_v1"
+
+[stats]
+bootstrap = 2000
+seed = 20261025
+
+[latency]
+sample = 50
+
+# Paired comparisons fixed before the run; the report never adds comparisons after seeing results.
+[[comparison]]
+a = "hyb+rr-C2"
+b = "bm25-C2"
+[[comparison]]
+a = "e5-C2"
+b = "mini-C2"
+[[comparison]]
+a = "hyb-C2"
+b = "e5-C2"
+[[comparison]]
+a = "e5+rr-C2"
+b = "e5-C2"
+[[comparison]]
+a = "hyb+rr-C2"
+b = "hyb-C2"
+[[comparison]]
+a = "bm25-C2"
+b = "bm25-C1"
+[[comparison]]
+a = "e5-C2"
+b = "e5-C1"
+[[comparison]]
+a = "hyb+rr-C2"
+b = "hyb+rr-C1"
+
+[headline]
+best = "hyb+rr-C2"
+dense_vs_english = ["e5-C2", "mini-C2"]
+stack_vs_lexical = ["hyb+rr-C2", "bm25-C2"]
+
+[generation]
+variants = ["bm25-C1", "e5-C2", "hyb-C2", "hyb+rr-C2"]
+context_chunks = 5
+max_questions = 0  # 0 = all questions
+
+[llm]
+mode = "replay"  # record | replay | live; PRUEFSTAND_LLM_MODE overrides
+run_in_all = false
+cassette = "fixtures/llm/cassette.jsonl"
+costs = "costs.toml"
+batch_poll_seconds = 60
+
+[llm.generator]
+provider = "anthropic"
+model = "claude-haiku-5-5"
+prompt = "prompts/answer_v1_de.md"
+max_tokens = 600
+effort = "low"
+thinking = "disabled"
+
+# Prompt ablation (live run, v0.2.0): same generator, neutral prompt without the source-only rule.
+[llm.ablation]
+provider = "anthropic"
+model = "claude-haiku-5-5"
+prompt = "prompts/answer_v1_neutral_de.md"
+max_tokens = 600
+effort = "low"
+thinking = "disabled"
+
+[llm.judge]
+provider = "anthropic"
+model = "claude-sonnet-5-5"
+prompt = "prompts/judge_v1.md"
+max_tokens = 4000
+effort = "low"
+thinking = "adaptive"
+batch = true
+
+[llm.second_judge]
+provider = "anthropic"
+model = "claude-opus-5-5"
+prompt = "prompts/judge_v1.md"
+max_tokens = 4000
+effort = "low"
+thinking = ""
+batch = true
+
+[llm.local]
+provider = "ollama"
+model = "qwen3:4b"
+prompt = "prompts/answer_v1_de.md"
+max_tokens = 600
+effort = ""
+thinking = "disabled"
+
+[budget]
+max_usd_per_run = 30.0
+
+# Projection for one full run (dry run: `pruefstand cost estimate`). Token figures are estimates (±50%).
+[[cost.stage]]
+name = "answers (4 configs)"
+role = "generator"
+calls = 960
+input_tokens = 4000
+output_tokens = 400
+batch = false
+[[cost.stage]]
+name = "prompt ablation"
+role = "ablation"
+calls = 240
+input_tokens = 4000
+output_tokens = 400
+batch = false
+[[cost.stage]]
+name = "repeats (50 x 3 x 2)"
+role = "generator"
+calls = 300
+input_tokens = 4000
+output_tokens = 400
+batch = false
+[[cost.stage]]
+name = "local generator"
+role = "local"
+calls = 100
+input_tokens = 4000
+output_tokens = 400
+batch = false
+[[cost.stage]]
+name = "judge"
+role = "judge"
+calls = 1600
+input_tokens = 5000
+output_tokens = 800
+batch = true
+[[cost.stage]]
+name = "second judge"
+role = "second_judge"
+calls = 100
+input_tokens = 5000
+output_tokens = 800
+batch = true
+
+[paths]
+runs_dir = "runs"
+run_id = "full-2026-10-25"
+reports_dir = "reports/v1"
+site_dir = "site"
+
+[profile.full]
+
+[profile.ci]
+corpus.laws = ["messbg"]
+corpus.zip_dir = "fixtures/ci/gii"
+corpus.snapshot_path = "fixtures/ci/gii/snapshot.json"
+corpus.units_path = "runs/ci/units.jsonl.gz"
+retrieval.cache_dir = "fixtures/ci/cache"
+retrieval.allow_compute = false
+questions.path = "fixtures/ci/questions.jsonl"
+latency.sample = 0
+generation.variants = ["bm25-C1", "hyb+rr-C2"]
+generation.max_questions = 8
+llm.mode = "replay"
+llm.run_in_all = false
+llm.cassette = "fixtures/llm/cassette.jsonl"
+paths.run_id = "ci"
+paths.reports_dir = "runs/ci/report"
+paths.site_dir = "runs/ci/site"

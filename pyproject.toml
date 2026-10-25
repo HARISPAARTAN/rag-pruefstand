@@ -1,0 +1,64 @@
+[project]
+name = "pruefstand"
+version = "0.1.0"
+description = "RAG-Prüfstand: German retrieval and RAG evaluation bench on federal energy law"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "anthropic==1.17.0",
+    "bm25s==0.3.13",
+    "matplotlib==3.11.2",
+    "numpy==2.5.4",
+    "PyStemmer==3.1.0",
+    "tokenizers==0.23.3",
+    "typer==0.27.3",
+]
+
+[project.optional-dependencies]
+models = [
+    "huggingface-hub==2.2.0",
+    "sentence-transformers==6.2.0",
+    "torch==2.14.1",
+    "transformers==5.20.2",
+]
+
+[project.scripts]
+pruefstand = "pruefstand.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.17.2",
+]
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pruefstand"]
+
+[tool.uv]
+environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 110
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+# Line length is the formatter's job; long German strings and URLs stay unbroken.
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: runs the offline CI bench end to end"]

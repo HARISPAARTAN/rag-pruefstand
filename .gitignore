@@ -1,0 +1,20 @@
+# Python and tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Secrets: keys live in the environment or in .env, never in the repository
+.env
+
+# Downloads and model caches (re-creatable: corpus fetch, models fetch)
+.cache/
+
+# Run directories: the CI run is rebuilt by every test run; chunks are rebuilt by `pruefstand chunk`
+runs/ci/
+runs/*/chunks_*.jsonl.gz
+runs/*/units.jsonl.gz
+
+# Local scratch
+*.log
